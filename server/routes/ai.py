@@ -58,6 +58,7 @@ def get_ai_config():
         "api_key": masked_key,
         "has_key": bool(api_key),
         "model": config.get("model", "deepseek-ai/DeepSeek-OCR"),
+        "ocr_model": config.get("ocr_model", "deepseek-ai/DeepSeek-OCR"),
         "base_url": config.get("base_url", "https://api.siliconflow.cn/v1")
     })
 
@@ -94,19 +95,21 @@ def ai_ocr():
     default_api_key = os.environ.get("OCR_API_KEY", "")
     default_ocr_model = "deepseek-ai/DeepSeek-OCR"
 
-    # 优先级：前端传入 > 已保存配置 > 默认配置
+    # 优先级：前端传入 > ocr_model配置 > model配置 > 默认配置
     input_api_key = data.get("api_key", "")
+    input_model = data.get("model", "")
     api_key = input_api_key or config.get("api_key", "") or default_api_key
-    model = data.get("model", "") or config.get("model", "") or default_ocr_model
+    model = input_model or config.get("ocr_model", "") or config.get("model", "") or default_ocr_model
 
     if not image_base64:
         return jsonify({'error': '请上传图片'}), 400
 
-    # 如果前端传入了新的 API Key，保存它
-    if input_api_key and not input_api_key.startswith("sk-****"):
-        config["api_key"] = input_api_key
-        if model:
-            config["model"] = model
+    # 如果前端传入了新的 API Key 或模型，保存配置
+    if (input_api_key and not input_api_key.startswith("sk-****")) or input_model:
+        if input_api_key and not input_api_key.startswith("sk-****"):
+            config["api_key"] = input_api_key
+        if input_model:
+            config["ocr_model"] = input_model
         save_ai_config(config)
 
     # 根据类型选择不同的提示词
