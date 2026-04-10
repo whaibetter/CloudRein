@@ -3,6 +3,7 @@ AI / OCR 模块
 """
 
 import os
+import re
 import json
 from pathlib import Path
 from flask import Blueprint, request, jsonify
@@ -164,7 +165,6 @@ def ai_ocr():
                 # 根据模式处理输出
                 if prompt_type == "ocr" and "<|ref|>" in content:
                     # OCR 模式：从 <|ref|>文字<|/ref|><|det|>坐标<|/det|> 格式中提取文字
-                    import re
                     texts = re.findall(r'<\|ref\|>(.*?)<\|\/ref\|>', content, flags=re.DOTALL)
                     output = '\n'.join(texts)
                 elif "<|ref|>" in content or "<|det|>" in content:
