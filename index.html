@@ -2526,6 +2526,12 @@ function switchTab(tab) {
         sm.classList.add('section-hidden');
         st.classList.add('section-hidden');
         stopMonitor();
+        // 如果路径输入框为空，自动加载根目录
+        const pathInput = document.getElementById('pathInput');
+        if (!pathInput.value.trim()) {
+            pathInput.value = '/';
+            loadPath();
+        }
     } else if (tab === 'monitor') {
         sf.classList.add('section-hidden');
         sm.classList.remove('section-hidden');
@@ -2970,7 +2976,7 @@ function buildBreadcrumb(path) {
     const bc = document.getElementById('breadcrumb');
     if (!path) { bc.innerHTML = '<span onclick="setPath(\'/\')">~</span>'; return; }
     const parts = path.split('/').filter(Boolean);
-    let html = '<span onclick="setPath(\'/\')">root</span>';
+    let html = '<span onclick="setPath(\'/\')">/</span>';
     let cur = '';
     for (const part of parts) {
         cur += '/' + part;
@@ -4059,6 +4065,10 @@ function initPageFromUrl() {
     const path = window.location.pathname;
     if (path === '/files') {
         switchTab('files');
+        // 如果当前路径为空，自动加载根目录
+        if (!currentPath && !document.getElementById('pathInput').value.trim()) {
+            setPath('/');
+        }
     } else if (path === '/tools') {
         switchTab('tools');
     } else {
