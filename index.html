@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudRein</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/logo.svg">
-    <link rel="shortcut icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="icon" type="image/svg+xml" href="/cloudrein/logo.svg">
+    <link rel="shortcut icon" type="image/svg+xml" href="/cloudrein/logo.svg">
     <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <!-- Highlight.js for syntax highlighting -->
@@ -1433,7 +1433,7 @@
 </div>
 
 <header>
-    <img src="/logo.svg" alt="Logo" style="height: 28px; width: 28px; margin-right: 8px;">
+    <img src="/cloudrein/logo.svg" alt="Logo" style="height: 28px; width: 28px; margin-right: 8px;">
     <h1>CloudRein</h1>
     <div class="nav-tabs">
         <button class="nav-tab active" id="tabMonitor" onclick="switchTab('monitor')">系统监控</button>
@@ -1808,6 +1808,18 @@
 </div>
 
 <script>
+// 自动检测 base path（支持部署在子路径下，如 /cloudrein/）
+const BASE_PATH = (() => {
+    const p = window.location.pathname;
+    const known = ['/files', '/monitor', '/tools'];
+    for (const k of known) { if (p.endsWith(k)) return p.slice(0, -k.length) || '/'; }
+    const seg = p.replace(/\/+$/, '');
+    if (seg && seg !== '/' && !seg.match(/\.(html|js|css|svg|png|ico)$/i)) return seg;
+    return '';
+})();
+
+function apiUrl(path) { return BASE_PATH + path; }
+
 let currentPath = '';
 let currentFileData = null;
 let currentTab = 'monitor';
@@ -1844,7 +1856,7 @@ let quickPathsCache = null;
 async function getQuickPaths() {
     if (quickPathsCache !== null) return quickPathsCache;
     try {
-        const resp = await fetch('/api/quickpaths', { method: 'GET' });
+        const resp = await fetch(apiUrl('/api/quickpaths'), { method: 'GET' });
         const data = await resp.json();
         quickPathsCache = data.quick_paths || DEFAULT_QUICK_PATHS;
         return quickPathsCache;
@@ -1856,7 +1868,7 @@ async function getQuickPaths() {
 // 保存快捷路径到服务器
 async function saveQuickPaths(paths) {
     try {
-        const resp = await fetch('/api/quickpaths', {
+        const resp = await fetch(apiUrl('/api/quickpaths'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ quick_paths: paths })
@@ -1916,8 +1928,8 @@ async function loadUserConfig() {
     try {
         // 并行加载表单配置和原始配置文件
         const [configResp, rawResp] = await Promise.all([
-            fetch('/api/userconfig', { method: 'GET' }),
-            fetch('/api/userconfig/raw', { method: 'GET' })
+            fetch(apiUrl('/api/userconfig'), { method: 'GET' }),
+            fetch(apiUrl('/api/userconfig/raw'), { method: 'GET' })
         ]);
         
         const configData = await configResp.json();
@@ -1996,7 +2008,7 @@ async function saveUserConfig() {
     msgEl.textContent = '正在保存...';
     
     try {
-        const resp = await fetch('/api/userconfig', {
+        const resp = await fetch(apiUrl('/api/userconfig'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ config })
@@ -2037,7 +2049,7 @@ async function resetUserConfig() {
     msgEl.textContent = '正在重置...';
     
     try {
-        const resp = await fetch('/api/userconfig/reset', { method: 'POST' });
+        const resp = await fetch(apiUrl('/api/userconfig/reset'), { method: 'POST' });
         const data = await resp.json();
         
         if (data.success) {
@@ -2087,7 +2099,7 @@ async function restartService() {
     
     try {
         // 调用重启API
-        const resp = await fetch('/api/system/restart', { 
+        const resp = await fetch(apiUrl('/api/system/restart'), { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -2104,7 +2116,7 @@ async function restartService() {
             const checkService = async () => {
                 retryCount++;
                 try {
-                    const checkResp = await fetch('/api/auth/check', { 
+                    const checkResp = await fetch(apiUrl('/api/auth/check'), { 
                         method: 'GET',
                         signal: AbortSignal.timeout(2000) // 2秒超时
                     });
@@ -2161,7 +2173,7 @@ async function restartService() {
 async function loadRawConfig() {
     const msgEl = document.getElementById('sysConfigMessage');
     try {
-        const resp = await fetch('/api/userconfig/raw', { method: 'GET' });
+        const resp = await fetch(apiUrl('/api/userconfig/raw'), { method: 'GET' });
         const data = await resp.json();
         if (data.content !== undefined) {
             document.getElementById('configRawEditor').value = data.content;
@@ -2202,7 +2214,7 @@ async function saveRawConfig() {
     msgEl.textContent = '正在保存...';
     
     try {
-        const resp = await fetch('/api/userconfig/raw', {
+        const resp = await fetch(apiUrl('/api/userconfig/raw'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ content })
@@ -2283,7 +2295,7 @@ async function doChangePassword() {
     }
     
     try {
-        const resp = await fetch('/api/changepwd', {
+        const resp = await fetch(apiUrl('/api/changepwd'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ old_password: oldPwd, new_password: newPwd })
@@ -2371,7 +2383,7 @@ async function addQuickPathFromPanel() {
     
     // 校验路径是否存在
     try {
-        const checkResp = await fetch('/api/file?path=' + encodeURIComponent(path));
+        const checkResp = await fetch(apiUrl('/api/file?path=') + encodeURIComponent(path));
         if (!checkResp.ok) {
             if (checkResp.status === 404) {
                 showToast('路径不存在: ' + path, 'error');
@@ -2509,8 +2521,8 @@ function switchTab(tab) {
     currentTab = tab;
     
     // 更新 URL
-    const urlMap = { 'monitor': '/', 'files': '/files', 'tools': '/tools' };
-    const newUrl = urlMap[tab] || '/';
+    const urlMap = { 'monitor': BASE_PATH + '/', 'files': BASE_PATH + '/files', 'tools': BASE_PATH + '/tools' };
+    const newUrl = urlMap[tab] || BASE_PATH + '/';
     if (window.location.pathname !== newUrl) {
         history.pushState({ tab }, '', newUrl);
     }
@@ -2569,7 +2581,7 @@ let ocrModels = [];
 
 async function loadOcrModels() {
     try {
-        const res = await fetch('/api/ai/models');
+        const res = await fetch(apiUrl('/api/ai/models'));
         if (res.ok) {
             ocrModels = await res.json();
             const select = document.getElementById('ocrModelSelect');
@@ -2659,7 +2671,7 @@ async function executeOcr() {
     }
 
     try {
-        const res = await fetch('/api/ai/ocr', {
+        const res = await fetch(apiUrl('/api/ai/ocr'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -2850,7 +2862,7 @@ async function addWhitelistPathFromPanel() {
     const path = input.value.trim();
     if (!path) { showNotification('请输入路径', 'error'); return; }
     try {
-        const resp = await fetch('/api/whitelist', {
+        const resp = await fetch(apiUrl('/api/whitelist'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'add', path })
@@ -2893,7 +2905,7 @@ async function loadPathWithoutPush() {
     selectedItems.clear();
     buildBreadcrumb(raw);
     try {
-        const resp = await fetch('/api/file?path=' + encodeURIComponent(raw));
+        const resp = await fetch(apiUrl('/api/file?path=') + encodeURIComponent(raw));
         const data = await resp.json();
         hideLoading();
         if (!resp.ok) {
@@ -2908,7 +2920,7 @@ async function loadPathWithoutPush() {
 
 async function checkAuth() {
     try {
-        const resp = await fetch('/api/auth/check');
+        const resp = await fetch(apiUrl('/api/auth/check'));
         const data = await resp.json();
         if (data.authenticated) hideLogin();
         else showLogin();
@@ -2936,7 +2948,7 @@ async function doLogin() {
     btn.disabled = true;
     btn.textContent = '验证中...';
     try {
-        const resp = await fetch('/api/login', {
+        const resp = await fetch(apiUrl('/api/login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password }),
@@ -2955,7 +2967,7 @@ async function doLogin() {
 
 async function doLogout() {
     stopMonitor();
-    await fetch('/api/logout', { method: 'POST' });
+    await fetch(apiUrl('/api/logout'), { method: 'POST' });
     showLogin();
 }
 
@@ -3024,7 +3036,7 @@ async function loadPath() {
     selectedItems.clear();
     buildBreadcrumb(raw);
     try {
-        const resp = await fetch('/api/file?path=' + encodeURIComponent(raw));
+        const resp = await fetch(apiUrl('/api/file?path=') + encodeURIComponent(raw));
         const data = await resp.json();
         hideLoading();
         if (!resp.ok) {
@@ -3088,7 +3100,7 @@ function updateSelectionInfo() {
 
 function downloadFile(path) {
     const link = document.createElement('a');
-    link.href = '/api/file/download?path=' + encodeURIComponent(path);
+    link.href = apiUrl('/api/file/download?path=') + encodeURIComponent(path);
     link.click();
 }
 
@@ -3101,7 +3113,7 @@ async function downloadSelected() {
     }
     showNotification('正在打包...', 'info');
     try {
-        const resp = await fetch('/api/file/download/batch', {
+        const resp = await fetch(apiUrl('/api/file/download/batch'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paths })
@@ -3146,7 +3158,7 @@ async function doDelete() {
     const paths = Array.from(selectedItems);
     if (paths.length === 0) return;
     try {
-        const resp = await fetch('/api/file/delete', {
+        const resp = await fetch(apiUrl('/api/file/delete'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paths })
@@ -3548,7 +3560,7 @@ async function saveFile() {
     const saveBtn = document.querySelector('.toggle-btn[onclick="saveFile()"]');
     if (saveBtn) { saveBtn.textContent = '保存中...'; saveBtn.disabled = true; }
     try {
-        const resp = await fetch('/api/file/save', {
+        const resp = await fetch(apiUrl('/api/file/save'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: currentFileData.path, content: newContent })
@@ -3613,7 +3625,7 @@ async function doCreate(type) {
     const name = document.getElementById('createName').value.trim();
     if (!name) { showNotification('请输入名称', 'error'); return; }
     try {
-        const resp = await fetch('/api/file/create', {
+        const resp = await fetch(apiUrl('/api/file/create'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ parent: currentDirPath, name: name, type: type })
@@ -3671,7 +3683,7 @@ function updateOctalDisplay() {
 async function doChmod() {
     const mode = document.getElementById('chmodOctal').value;
     try {
-        const resp = await fetch('/api/file/chmod', {
+        const resp = await fetch(apiUrl('/api/file/chmod'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: chmodTargetPath, mode })
@@ -3722,7 +3734,7 @@ async function doRename() {
         return;
     }
     try {
-        const resp = await fetch('/api/file/rename', {
+        const resp = await fetch(apiUrl('/api/file/rename'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: renameTargetPath, new_name: newName })
@@ -3786,7 +3798,7 @@ async function doUpload() {
         formData.append('file', file);
         formData.append('path', currentDirPath);
         try {
-            const resp = await fetch('/api/file/upload', { method: 'POST', body: formData });
+            const resp = await fetch(apiUrl('/api/file/upload'), { method: 'POST', body: formData });
             if (resp.ok) successCount++; else errorCount++;
         } catch (e) { errorCount++; }
     }
@@ -3854,7 +3866,7 @@ function updateMonitorControls() {
 
 async function loadWhitelist() {
     try {
-        const resp = await fetch('/api/whitelist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const resp = await fetch(apiUrl('/api/whitelist'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
         if (resp.status === 401) { showLogin(); return; }
         const data = await resp.json();
         renderWhitelist(data.whitelist || []);
@@ -3891,7 +3903,7 @@ async function resetWhitelistToDefault() {
     if (confirm('确定要恢复默认白名单吗？这将覆盖当前配置。')) {
         const defaultWhitelist = ['/tmp', '/var/tmp'];
         try {
-            const resp = await fetch('/api/whitelist', {
+            const resp = await fetch(apiUrl('/api/whitelist'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'set', whitelist: defaultWhitelist })
@@ -3911,7 +3923,7 @@ async function resetWhitelistToDefault() {
 
 async function removeWhitelistPath(path) {
     try {
-        const resp = await fetch('/api/whitelist', {
+        const resp = await fetch(apiUrl('/api/whitelist'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'remove', path })
@@ -3935,7 +3947,7 @@ document.addEventListener('visibilitychange', () => {
 
 async function fetchSystemInfo() {
     try {
-        const resp = await fetch('/api/system');
+        const resp = await fetch(apiUrl('/api/system'));
         if (resp.status === 401) { showLogin(); return; }
         const d = await resp.json();
         renderMonitor(d);
@@ -4063,13 +4075,14 @@ function renderMonitor(d) {
 // 根据 URL 路径初始化页面
 function initPageFromUrl() {
     const path = window.location.pathname;
-    if (path === '/files') {
+    const relative = BASE_PATH && path.startsWith(BASE_PATH) ? path.slice(BASE_PATH.length) || '/' : path;
+    if (relative === '/files') {
         switchTab('files');
         // 如果当前路径为空，自动加载根目录
         if (!currentPath && !document.getElementById('pathInput').value.trim()) {
             setPath('/');
         }
-    } else if (path === '/tools') {
+    } else if (relative === '/tools') {
         switchTab('tools');
     } else {
         // 默认显示监控页面（/ 或 /monitor）
@@ -4139,7 +4152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchHistoryData() {
     try {
-        const resp = await fetch(`/api/system/history?hours=${currentHistoryHours}`);
+        const resp = await fetch(apiUrl(`/api/system/history?hours=${currentHistoryHours}`));
         if (resp.status === 401) return;
         const data = await resp.json();
         renderCharts(data);
