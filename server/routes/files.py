@@ -433,20 +433,22 @@ def file_upload():
         return jsonify({'error': 'Unauthorized'}), 401
 
     try:
-        path = request.form.get('path')
-        if not path:
+        dir_path = request.form.get('path')
+        if not dir_path:
             return jsonify({'error': 'Missing path'}), 400
 
         file = request.files.get('file')
         if not file:
             return jsonify({'error': 'No file uploaded'}), 400
 
-        path = os.path.normpath(path)
-        parent = os.path.dirname(path)
+        dir_path = os.path.normpath(dir_path)
 
-        allowed, reason = check_permission(parent, 'write')
+        allowed, reason = check_permission(dir_path, 'write')
         if not allowed:
             return jsonify({'error': reason}), 403
+
+        # 拼接目录 + 文件名
+        path = os.path.join(dir_path, file.filename)
 
         # 处理文件名冲突
         final_path = path
