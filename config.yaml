@@ -1,20 +1,21 @@
 server:
   host: 127.0.0.1
-  port: 9001
+  port: 12151
   session_timeout: 3600
 storage:
   data_dir: /etc/cloudrein
   user_config_file: /etc/cloudrein/user_config.yaml
 security:
   delete_whitelist:
-  - /tmp
-  - /var/tmp
-  - /home
+  - /data/webdav
 permissions:
-  folder_permissions: null
+  folder_permissions:
+    /data/webdav:
+      read: true
+      write: true
   default_permissions:
-    read: true
-    write: true
+    read: false
+    write: false
 download_limits:
   max_single_file_size: 104857600
   max_total_download_size: 209715200

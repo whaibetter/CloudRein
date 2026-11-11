@@ -442,8 +442,13 @@ def file_upload():
         if not allowed:
             return jsonify({'error': reason}), 403
 
+        # 只允许纯文件名，防止通过文件名跳出目标目录
+        filename = os.path.basename((file.filename or '').replace('\\', '/'))
+        if not filename or filename in ('.', '..'):
+            return jsonify({'error': 'Invalid filename'}), 400
+
         # 拼接目录 + 文件名
-        path = os.path.join(dir_path, file.filename)
+        path = os.path.join(dir_path, filename)
 
         # 处理文件名冲突
         final_path = path

@@ -3,71 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloudRein</title>
+    <title>CloudRein · 文件库</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/cloudrein/logo.svg">
-    <link rel="shortcut icon" type="image/svg+xml" href="/cloudrein/logo.svg">
-    <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="shortcut icon" type="image/svg+xml" href="/logo.svg">
+    <script src="/assets/cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <!-- Highlight.js for syntax highlighting -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+    <link rel="stylesheet" href="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
     <!-- Chart.js for monitoring charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/yaml.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/json.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/javascript.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/typescript.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/bash.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/sql.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/xml.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/css.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/nginx.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/dockerfile.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/markdown.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/go.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/rust.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/java.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/cpp.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/c.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/ruby.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/php.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/lua.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/perl.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/diff.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/ini.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/toml.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/kotlin.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/swift.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/scala.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/vue.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/yaml.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/json.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/javascript.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/typescript.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/bash.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/sql.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/xml.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/css.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/nginx.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/dockerfile.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/markdown.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/go.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/rust.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/java.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/cpp.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/c.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/ruby.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/php.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/lua.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/perl.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/diff.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/ini.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/kotlin.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/swift.min.js"></script>
+    <script src="/assets/cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/scala.min.js"></script>
     <!-- CodeMirror for code editing -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/typescript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/go/go.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/rust/rust.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/ruby/ruby.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/php/php.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/lua/lua.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/perl/perl.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/diff/diff.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/toml/toml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/properties/properties.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <link rel="stylesheet" href="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/mode/simple.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/go/go.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/rust/rust.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/ruby/ruby.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/php/php.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/lua/lua.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/perl/perl.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/diff/diff.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/toml/toml.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/properties/properties.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1412,6 +1410,12 @@
             .quick-path-form .path-input { width: 100%; }
             .quick-path-form .btn { width: 100%; }
         }
+
+        /* 仅保留文件管理与精简设置 */
+        #tabMonitor, #tabTools { display: none !important; }
+        #sectionMonitor, #sectionTools { display: none !important; }
+        .settings-tab:nth-child(1), .settings-tab:nth-child(3) { display: none !important; }
+        #settingsTabWhitelist, #settingsTabSysconfig { display: none !important; }
     </style>
 </head>
 <body>
@@ -1433,11 +1437,11 @@
 </div>
 
 <header>
-    <img src="/cloudrein/logo.svg" alt="Logo" style="height: 28px; width: 28px; margin-right: 8px;">
+    <img src="/logo.svg" alt="Logo" style="height: 28px; width: 28px; margin-right: 8px;">
     <h1>CloudRein</h1>
     <div class="nav-tabs">
-        <button class="nav-tab active" id="tabMonitor" onclick="switchTab('monitor')">系统监控</button>
-        <button class="nav-tab" id="tabFiles" onclick="switchTab('files')">文件浏览</button>
+        <button class="nav-tab" id="tabMonitor" onclick="switchTab('monitor')">系统监控</button>
+        <button class="nav-tab active" id="tabFiles" onclick="switchTab('files')">文件浏览</button>
         <button class="nav-tab" id="tabTools" onclick="switchTab('tools')">工具</button>
     </div>
     <button class="settings-btn" onclick="openSettingsPanel()" title="设置">⚙️</button>
@@ -1608,15 +1612,15 @@
     
     <!-- Settings Tabs -->
     <div class="settings-tabs">
-        <button class="settings-tab active" onclick="switchSettingsTab('whitelist')">删除白名单</button>
-        <button class="settings-tab" onclick="switchSettingsTab('quickpaths')">快捷路径</button>
+        <button class="settings-tab" onclick="switchSettingsTab('whitelist')">删除白名单</button>
+        <button class="settings-tab active" onclick="switchSettingsTab('quickpaths')">快捷路径</button>
         <button class="settings-tab" onclick="switchSettingsTab('sysconfig')">系统配置</button>
         <button class="settings-tab" onclick="switchSettingsTab('password')">密码修改</button>
     </div>
     
     <div class="settings-content">
         <!-- 删除白名单标签 -->
-        <div id="settingsTabWhitelist" class="settings-tab-body active">
+        <div id="settingsTabWhitelist" class="settings-tab-body">
             <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px;">只有白名单中的路径才允许删除操作（支持目录和单个文件）</p>
             <div style="display:flex;gap:8px;margin-bottom:16px;">
                 <input type="text" id="newWhitelistPath" class="path-input" placeholder="输入路径，如 /tmp 或 /home/test.txt" style="flex:1">
@@ -1644,7 +1648,7 @@
         </div>
         
         <!-- 快捷路径标签 -->
-        <div id="settingsTabQuickpaths" class="settings-tab-body">
+        <div id="settingsTabQuickpaths" class="settings-tab-body active">
             <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px;">自定义快捷访问路径，方便快速导航（添加时会校验路径是否存在）</p>
             <div class="quick-path-form">
                 <input type="text" id="newQuickPathInput" class="path-input" placeholder="输入路径，如 /var/log">
@@ -1812,7 +1816,7 @@
 const BASE_PATH = (() => {
     const p = window.location.pathname;
     const known = ['/files', '/monitor', '/tools'];
-    for (const k of known) { if (p.endsWith(k)) return p.slice(0, -k.length) || '/'; }
+    for (const k of known) { if (p.endsWith(k)) return p.slice(0, -k.length).replace(/\/$/, ''); }
     const seg = p.replace(/\/+$/, '');
     if (seg && seg !== '/' && !seg.match(/\.(html|js|css|svg|png|ico)$/i)) return seg;
     return '';
@@ -1820,9 +1824,11 @@ const BASE_PATH = (() => {
 
 function apiUrl(path) { return BASE_PATH + path; }
 
+const HOME_PATH = '/data/webdav';
+
 let currentPath = '';
 let currentFileData = null;
-let currentTab = 'monitor';
+let currentTab = 'files';
 let monitorTimer = null;
 let monitorPaused = false;
 let monitorInterval = 3000;
@@ -1838,15 +1844,12 @@ let sortOrder = 'asc';      // 排序方向 asc/desc
 
 // 默认快捷路径配置
 const DEFAULT_QUICK_PATHS = [
-    { path: '/', name: '/ 根目录' },
-    { path: '/etc', name: '/etc' },
-    { path: '/var/log', name: '/var/log' },
-    { path: '/var/www/html', name: '/var/www/html' },
-    { path: '/etc/nginx/nginx.conf', name: '/etc/nginx/nginx.conf' },
-    { path: '/proc/cpuinfo', name: '/proc/cpuinfo' },
-    { path: '/proc/meminfo', name: '/proc/meminfo' },
-    { path: '/etc/passwd', name: '/etc/passwd' },
-    { path: '/etc/hosts', name: '/etc/hosts' }
+    { path: '/data/webdav', name: '文件库' },
+    { path: '/data/webdav/magpie', name: 'magpie' },
+    { path: '/data/webdav/memos', name: 'memos' },
+    { path: '/data/webdav/cc-switch-sync', name: 'cc-switch-sync' },
+    { path: '/data/webdav/cc-switch-sync-mech', name: 'cc-switch-sync-mech' },
+    { path: '/data/webdav/cherry-studio', name: 'cherry-studio' }
 ];
 
 // 快捷路径缓存
@@ -2541,7 +2544,7 @@ function switchTab(tab) {
         // 如果路径输入框为空，自动加载根目录
         const pathInput = document.getElementById('pathInput');
         if (!pathInput.value.trim()) {
-            pathInput.value = '/';
+            pathInput.value = HOME_PATH;
             loadPath();
         }
     } else if (tab === 'monitor') {
@@ -2849,7 +2852,7 @@ function toggleOcrDebug() {
 function openSettingsPanel() {
     document.getElementById('settingsPanel').classList.add('open');
     document.getElementById('settingsPanelOverlay').classList.add('visible');
-    loadWhitelist();
+    switchSettingsTab('quickpaths');
 }
 
 function closeSettingsPanel() {
@@ -2953,7 +2956,10 @@ async function doLogin() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password }),
         });
-        if (resp.ok) hideLogin();
+        if (resp.ok) {
+            hideLogin();
+            setPath(document.getElementById('pathInput').value.trim() || HOME_PATH);
+        }
         else {
             document.getElementById('loginError').classList.add('visible');
             document.getElementById('loginPassword').value = '';
@@ -2979,22 +2985,39 @@ function setPath(p) {
 
 function goUp() {
     const p = document.getElementById('pathInput').value.trim() || currentPath;
-    if (!p || p === '/') return;
+    if (!p || p === HOME_PATH) return;
     const parent = p.replace(/\/[^/]+\/?$/, '') || '/';
+    if (parent !== HOME_PATH && !parent.startsWith(HOME_PATH + '/')) {
+        setPath(HOME_PATH);
+        return;
+    }
     setPath(parent);
 }
 
 function buildBreadcrumb(path) {
     const bc = document.getElementById('breadcrumb');
-    if (!path) { bc.innerHTML = '<span onclick="setPath(\'/\')">~</span>'; return; }
-    const parts = path.split('/').filter(Boolean);
-    let html = '<span onclick="setPath(\'/\')">/</span>';
-    let cur = '';
-    for (const part of parts) {
+    const homeEsc = HOME_PATH.replace(/'/g, "\\'");
+    let html = `<span onclick="setPath('${homeEsc}')">文件库</span>`;
+    let rel = '';
+    if (path === HOME_PATH) {
+        rel = '';
+    } else if (path && path.startsWith(HOME_PATH + '/')) {
+        rel = path.slice(HOME_PATH.length);
+    } else {
+        let cur = '';
+        for (const part of (path || '').split('/').filter(Boolean)) {
+            cur += '/' + part;
+            const p = cur;
+            html += `<span class="sep"> / </span><span onclick="setPath('${p.replace(/'/g, "\\'")}')">${escHtml(part)}</span>`;
+        }
+        bc.innerHTML = html;
+        return;
+    }
+    let cur = HOME_PATH;
+    for (const part of rel.split('/').filter(Boolean)) {
         cur += '/' + part;
-        html += '<span class="sep"> / </span>';
         const p = cur;
-        html += `<span onclick="setPath('${p.replace(/'/g, "\\'")}')">${escHtml(part)}</span>`;
+        html += `<span class="sep"> / </span><span onclick="setPath('${p.replace(/'/g, "\\'")}')">${escHtml(part)}</span>`;
     }
     bc.innerHTML = html;
 }
@@ -4074,24 +4097,18 @@ function renderMonitor(d) {
 
 // 根据 URL 路径初始化页面
 function initPageFromUrl() {
-    const path = window.location.pathname;
-    const relative = BASE_PATH && path.startsWith(BASE_PATH) ? path.slice(BASE_PATH.length) || '/' : path;
-    if (relative === '/files') {
-        switchTab('files');
-        // 如果当前路径为空，自动加载根目录
-        if (!currentPath && !document.getElementById('pathInput').value.trim()) {
-            setPath('/');
-        }
-    } else if (relative === '/tools') {
-        switchTab('tools');
-    } else {
-        // 默认显示监控页面（/ 或 /monitor）
-        switchTab('monitor');
+    switchTab('files');
+    if (!currentPath) {
+        setPath(document.getElementById('pathInput').value.trim() || HOME_PATH);
     }
 }
 
 // 处理浏览器前进/后退
 window.addEventListener('popstate', (e) => {
+    if (e.state && (e.state.tab === 'monitor' || e.state.tab === 'tools')) {
+        switchTab('files');
+        return;
+    }
     if (e.state && e.state.tab) {
         // 不调用 switchTab，直接切换显示，避免修改 history
         currentTab = e.state.tab;
