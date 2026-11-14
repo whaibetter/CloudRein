@@ -2,6 +2,65 @@
 
 基于 Web 的 Linux 服务器文件管理工具，提供文件浏览、编辑、上传、下载、系统监控、OCR 文字识别等功能。
 
+> **本分支（`feature/file-library-webdav-gateway`）是"文件库精简版"**：在原版基础上裁剪功能、限定文件范围，并新增 WebDAV 分流网关，适合与 rclone WebDAV 共用同一端口对外服务。详见下文[本分支变更](#本分支变更)。
+
+## 本分支变更
+
+### 功能裁剪
+
+- 界面只保留「文件管理」标签；系统监控、工具中心（OCR）入口已隐藏（后端能力保留，去掉隐藏样式即可恢复）
+- 设置面板只保留「快捷路径」和「密码修改」两个标签页
+- 文件浏览 / 读写范围限定在 `/data/webdav`，其余目录默认无任何权限（`default_permissions` 全关）
+- 快捷路径默认指向 `/data/webdav` 及其常用子目录
+
+### WebDAV 分流网关（新增 `gateway/server.js`）
+
+零依赖 Node HTTP 网关，单端口同时对外提供网页和 WebDAV 两种服务，按请求特征分流：
+
+```
+浏览器 ──> 12179 网关 ──┬─> CloudRein 127.0.0.1:12151   网页 / API / WebSocket
+                        ├─> rclone    127.0.0.1:12150   WebDAV（PROPFIND/PUT/MKCOL 等方法、Basic 认证）
+                        └─> assets/                     本地静态资源
+```
+
+分流规则：
+
+| 请求特征 | 去向 |
+|----------|------|
+| WebDAV 方法（PROPFIND、PROPPATCH、MKCOL、LOCK、UNLOCK、MOVE、COPY、OPTIONS）或 PUT / DELETE / PATCH | rclone |
+| GET/HEAD 且带 Basic 认证头 | rclone |
+| `/api/*`、`/socket.io/*`、页面路径 | CloudRein |
+| `/assets/*` | 网关本地目录 |
+
+网关环境变量：`PORT`（默认 12179）、`CLOUDREIN_PORT`、`RCLONE_PORT`、`ASSETS_DIR`。
+
+### 前端资源本地化
+
+原版 `index.html` 引用 55 个外网 CDN 的 JS/CSS（Vue、CodeMirror、Highlight.js 等），本分支全部下载到 `assets/` 并改写为 `/assets/...` 本地引用，内网或离线环境可正常使用；个别 CDN 上本就不存在的语言包（toml/vue/typescript）已一并移除引用。
+
+### 安全加固
+
+- 上传接口修复文件名路径穿越问题：只取纯文件名（`basename`），拒绝空名和 `.`/`..`（`server/routes/files.py`）
+
+### 部署要点（本分支实际使用的配置）
+
+```yaml
+server:
+  host: "127.0.0.1"   # 只监听本地，由网关对外
+  port: 12151
+
+permissions:
+  folder_permissions:
+    "/data/webdav": {read: true, write: true}
+  default_permissions: {read: false, write: false}
+
+security:
+  delete_whitelist: ["/data/webdav"]
+```
+
+- systemd 服务：`cloudrein.service`（12151，`MemoryMax=512M`）+ `cloudrein-gateway.service`（12179，`MemoryMax=128M`）
+- rclone WebDAV 改绑 `127.0.0.1:12150`，不再直接对外
+
 ## 功能特性
 
 ### 文件管理
@@ -22,14 +81,14 @@
 - **文件删除** - 支持白名单管控，防止误删系统重要文件
 - **权限管理** - 查看和修改文件权限
 
-### 系统监控
+### 系统监控（本分支已隐藏入口，后端保留）
 - **实时监控** - CPU、内存、磁盘、网络状态实时展示
 - **历史数据** - 支持查看 1 小时、6 小时、24 小时历史数据
 - **进程管理** - 查看系统进程列表和资源占用
 - **温度监控** - 支持 CPU/系统温度监控（需硬件支持）
 - **磁盘 I/O** - 实时磁盘读写速率监控
 
-### 工具中心
+### 工具中心（本分支已隐藏入口，后端保留）
 - **OCR 文字识别** - 支持图片文字识别，多种模型可选
   - 三种识别模式：OCR文字识别、Markdown格式、纯文本提取
   - 支持 DeepSeek-OCR、Qwen2-VL 等多种模型
@@ -366,6 +425,9 @@ sudo cloudrein passwd         # 修改登录密码
 ├── index.html                # 前端页面
 ├── install.sh                # 安装脚本
 ├── requirements.txt          # Python 依赖
+├── gateway/                  # WebDAV 分流网关（本分支新增）
+│   └── server.js             # 零依赖 Node 网关
+├── assets/                   # 本地化前端静态资源（本分支新增）
 └── server/                   # 后端代码
     ├── __init__.py           # Flask 应用工厂
     ├── main.py               # 服务启动
