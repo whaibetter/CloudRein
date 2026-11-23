@@ -39,6 +39,13 @@ def create_app() -> Flask:
     from .routes import register_routes
     register_routes(app)
 
+    # JD-Auth 统一密钥：跨域名票据换本地会话
+    try:
+        from .sso_hooks import register_sso
+        register_sso(app)
+    except Exception as exc:
+        print(f"Warning: JD-Auth SSO hooks disabled: {exc}")
+
     return app
 
 
