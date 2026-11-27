@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 from flask import g, redirect, request
 
-from .session import create_session
+from .session import create_session, secure_cookies
 from .sso import SsoVerifier
 
 APP_ID = os.environ.get("CLOUDREIN_SSO_APP_ID", "webdav")
@@ -39,11 +39,21 @@ def register_sso(app):
     def _jd_ticket_cookie(response):
         sid = getattr(g, "sso_session", None)
         if sid:
-            response.set_cookie("sessionid", sid, max_age=3600, httponly=True, samesite="Lax")
+            secure = secure_cookies()
+            response.set_cookie(
+                "sessionid", sid, max_age=3600, httponly=True,
+                samesite="Lax", secure=secure, path="/"
+            )
             # 按规范换发本域 jd_sso，App/浏览器后续访问不用再走票据
             token = VERIFIER.sign_session(APP_ID, 2592000)
             if token:
-                response.set_cookie("jd_sso", token, max_age=2592000, httponly=True, samesite="Lax")
+                response.set_cookie(
+                    "jd_sso", token, max_age=2592000, httponly=True,
+                    samesite="Lax", secure=secure, path="/"
+                )
         if request.path == "/api/logout":
-            response.set_cookie("jd_sso", "", max_age=0, path="/", httponly=True, samesite="Lax")
+            response.set_cookie(
+                "jd_sso", "", max_age=0, path="/", httponly=True,
+                samesite="Lax", secure=secure_cookies()
+            )
         return response

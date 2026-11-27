@@ -6,7 +6,7 @@ import os
 import re
 import json
 from pathlib import Path
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 
 from ..config import load_config, DATA_DIR
 from ..session import require_auth
@@ -203,14 +203,11 @@ def ai_ocr():
                 return jsonify({'error': '无响应内容'}), 500
 
     except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8") if e.fp else ""
-        try:
-            error_json = json.loads(error_body)
-            error_msg = error_json.get("error", {}).get("message", error_body)
-        except:
-            error_msg = error_body or str(e)
-        return jsonify({'error': f'API 错误: {error_msg}'}), 500
-    except urllib.error.URLError as e:
-        return jsonify({'error': f'网络错误: {str(e)}'}), 500
-    except Exception as e:
-        return jsonify({'error': f'请求失败: {str(e)}'}), 500
+        current_app.logger.warning("OCR upstream returned HTTP %s", e.code)
+        return jsonify({'error': 'API 请求失败'}), 502
+    except urllib.error.URLError:
+        current_app.logger.exception("OCR upstream connection failed")
+        return jsonify({'error': '网络错误'}), 502
+    except Exception:
+        current_app.logger.exception("OCR request failed")
+        return jsonify({'error': '请求失败'}), 500

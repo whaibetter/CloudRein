@@ -34,6 +34,8 @@
 
 网关环境变量：`PORT`（默认 12179）、`CLOUDREIN_PORT`、`RCLONE_PORT`、`ASSETS_DIR`。
 
+Flask 的 `CLOUDREIN_TRUSTED_PROXIES` 是逗号分隔的可信代理 IP/CIDR 列表；只对这些直连 peer 信任 `X-Forwarded-Proto`、`X-Forwarded-Host` 和 `X-Forwarded-For`。经本地网关访问时配置 `127.0.0.1`，直接访问 Flask 时留空。网关自己的 `CLOUDREIN_TRUST_PROXY=1` 是另一项开关，只在明确需要读取上游协议头时启用。
+
 ### 前端资源本地化
 
 原版 `index.html` 引用 55 个外网 CDN 的 JS/CSS（Vue、CodeMirror、Highlight.js 等），本分支全部下载到 `assets/` 并改写为 `/assets/...` 本地引用，内网或离线环境可正常使用；个别 CDN 上本就不存在的语言包（toml/vue/typescript）已一并移除引用。
@@ -387,7 +389,7 @@ sudo ufw deny 9001/tcp
 
 ```json
 {
-    "api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
+    "api_key": "<your-api-key>",
     "model": "deepseek-ocr",
     "base_url": "https://api.siliconflow.cn/v1/chat/completions"
 }
@@ -509,6 +511,15 @@ download_limits:
 monitor:
   history_minutes: 60    # 历史数据保留时长（1-60分钟）
 ```
+
+### 下载限额与路径安全
+
+`download_limits` 现在对上传、单文件下载、目录打包和批量下载全部生效：
+
+- 路径先 `normpath` + `realpath`，再按真实目标做权限判断；指向目录外的 symlink 会被跳过。
+- 单文件超过 `max_single_file_size` 返回 413；目录/批量超过 `max_total_download_size` 返回 413；超过 `max_files_in_zip` 返回 400。
+- 打包前先收集并校验总量，超限请求不会留下半成品 zip。
+- 上传超过单文件上限返回 413，已落盘的超限文件会被删除；`max_dir_depth` 用于限制递归打包层级。
 
 ### Web 设置面板
 

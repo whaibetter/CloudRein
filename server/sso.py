@@ -15,7 +15,7 @@ import hmac
 import json
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 
 def b64url_encode(data: bytes) -> str:
@@ -62,12 +62,13 @@ def normalize_secret(value: Any) -> Optional[bytes]:
 
 
 class SsoResult:
-    def __init__(self, ok: bool, reason: str = "", token: str = "", payload: Optional[Dict[str, Any]] = None, csrf: str = ""):
+    def __init__(self, ok: bool, reason: str = "", token: str = "", payload: Optional[Dict[str, Any]] = None, csrf: str = "", replay: bool = False):
         self.ok = ok
         self.reason = reason
         self.token = token
         self.payload = payload or {}
         self.csrf = csrf
+        self.replay = bool(replay)
 
     def __bool__(self) -> bool:
         return bool(self.ok)
@@ -82,6 +83,8 @@ class SsoVerifier:
         cookie_name: str = "jd_sso",
         skew_sec: int = 120,
         cache_seconds: float = 2.0,
+        ticket_replay_grace_sec: float = 90,
+        clock: Optional[Callable[[], float]] = None,
     ):
         self.secret_file = secret_file
         self.explicit_secret = secret
@@ -89,16 +92,18 @@ class SsoVerifier:
         self.cookie_name = cookie_name
         self.skew_sec = int(skew_sec or 0)
         self.cache_seconds = float(cache_seconds or 0)
+        self.ticket_replay_grace_sec = float(ticket_replay_grace_sec or 0)
+        self._clock = clock or time.time
         self._cache: Optional[bytes] = None
         self._cache_at = 0.0
         self._cache_mtime = None
         self._cache_size = None
-        self._used_tickets: Dict[str, int] = {}
+        self._used_tickets: Dict[str, Dict[str, int]] = {}
 
     # ---------- secret ----------
 
     def _read_secret(self) -> Optional[bytes]:
-        now = time.time()
+        now = self._clock()
         if (now - self._cache_at) < self.cache_seconds:
             return self._cache
         self._cache_at = now
@@ -157,7 +162,7 @@ class SsoVerifier:
         if not isinstance(payload, dict) or payload.get("v") != 1:
             return SsoResult(False, "version")
 
-        now = int(time.time())
+        now = int(self._clock())
         try:
             exp = int(payload.get("exp"))
         except Exception:
@@ -219,20 +224,28 @@ class SsoVerifier:
         jti = payload.get("jti")
         if not jti:
             return SsoResult(False, "jti")
-        now = int(time.time())
+        now = int(self._clock())
+        exp = int(payload["exp"])
+        # 票据的绝对到期时间优先于会话使用的时钟偏差宽限。
+        if now >= exp:
+            return SsoResult(False, "expired")
         if len(self._used_tickets) > 500:
-            for key, exp in list(self._used_tickets.items()):
-                if exp <= now:
+            for key, record in list(self._used_tickets.items()):
+                if record["exp"] <= now:
                     self._used_tickets.pop(key, None)
-        if jti in self._used_tickets:
+        first = self._used_tickets.get(jti)
+        if first is not None:
+            if (self.ticket_replay_grace_sec > 0
+                    and now - first["grantedAt"] <= self.ticket_replay_grace_sec):
+                return SsoResult(True, token=token, payload=payload, replay=True)
             return SsoResult(False, "replay")
-        self._used_tickets[jti] = int(payload.get("exp") or (now + 60))
+        self._used_tickets[jti] = {"exp": exp, "grantedAt": now}
         return SsoResult(True, token=token, payload=payload)
 
     # ---------- sign local sessions ----------
 
     def sign_session(self, app_id: str = "all", ttl_sec: int = 2592000) -> str:
-        now = int(time.time())
+        now = int(self._clock())
         return self.sign_payload(
             {
                 "v": 1,

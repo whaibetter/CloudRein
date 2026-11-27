@@ -3,7 +3,7 @@
 """
 
 import yaml
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 
 from ..session import require_auth
 from ..auth import (
@@ -54,8 +54,9 @@ def quickpaths_save():
             return jsonify({'success': True, 'quick_paths': paths})
         else:
             return jsonify({'error': '保存失败'}), 500
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Configuration API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 # === 修改密码 ===
@@ -75,8 +76,9 @@ def changepwd():
             return jsonify({'success': True, 'message': message})
         else:
             return jsonify({'error': message}), 400
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Configuration API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 # === 用户配置 API ===
@@ -187,8 +189,9 @@ def userconfig_save():
             return jsonify({'success': True, 'config': user_cfg})
         else:
             return jsonify({'error': '保存配置失败'}), 500
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Configuration API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @config_bp.route('/userconfig/reset', methods=['POST'])
@@ -202,8 +205,9 @@ def userconfig_reset():
             return jsonify({'success': True, 'message': '配置已重置为默认值'})
         else:
             return jsonify({'error': '重置配置失败'}), 500
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Configuration API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @config_bp.route('/userconfig/raw', methods=['GET'])
@@ -219,8 +223,9 @@ def userconfig_raw_get():
         else:
             content = ""
         return jsonify({'content': content})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Configuration API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @config_bp.route('/userconfig/raw', methods=['POST'])
@@ -240,8 +245,9 @@ def userconfig_raw_save():
                 parsed = {}
             if not isinstance(parsed, dict):
                 return jsonify({'error': '配置必须是 YAML 对象格式'}), 400
-        except yaml.YAMLError as e:
-            return jsonify({'error': f'YAML 格式错误: {str(e)}'}), 400
+        except yaml.YAMLError:
+            current_app.logger.exception("Invalid YAML configuration")
+            return jsonify({'error': 'YAML 格式错误'}), 400
 
         # 保存配置文件
         USER_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -254,5 +260,6 @@ def userconfig_raw_save():
         _user_config = parsed
 
         return jsonify({'success': True, 'message': '配置文件已保存'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Configuration API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500

@@ -23,6 +23,46 @@ const RCLONE = {
 };
 const ASSETS_DIR = path.resolve(process.env.ASSETS_DIR || '/opt/cloudrein/app/assets');
 const DEBUG = !!process.env.LOG_REQUESTS;
+const TRUST_PROXY = process.env.CLOUDREIN_TRUST_PROXY === '1';
+const PUBLIC_SCHEME = process.env.CLOUDREIN_PUBLIC_SCHEME === 'https' ? 'https' : 'http';
+const SENSITIVE_PARAMS = new Set([
+  'k', 'key', 'token', 'jd_ticket', 'access_token', 'refresh_token',
+  'password', 'passwd', 'secret', 'signature', 'sig',
+]);
+const NESTED_URL_PARAMS = new Set(['return', 'return_to', 'redirect', 'redirect_uri', 'url', 'next']);
+
+function sanitizeUrl(raw, depth = 0) {
+  if (depth > 4) return '[redacted]';
+  try {
+    const url = new URL(String(raw || '/'), 'http://local');
+    const sanitize = (value) => sanitizeUrl(value, depth + 1);
+    for (const [name, value] of [...url.searchParams]) {
+      const normalized = name.toLowerCase();
+      if (SENSITIVE_PARAMS.has(normalized)) {
+        url.searchParams.set(name, '[redacted]');
+      } else if (NESTED_URL_PARAMS.has(normalized)
+        && (value.startsWith('/') || /^[a-z][a-z\d+.-]*:\/\//i.test(value))) {
+        url.searchParams.set(name, sanitize(value));
+      }
+    }
+    url.username = '';
+    url.password = '';
+    url.hash = '';
+    return url.pathname + url.search;
+  } catch {
+    return '/[invalid-url]';
+  }
+}
+
+function forwardedProto(req, options = {}) {
+  const trustProxy = options.trustProxy === undefined ? TRUST_PROXY : options.trustProxy;
+  const publicScheme = options.publicScheme || PUBLIC_SCHEME;
+  if (trustProxy) {
+    const value = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+    if (value === 'http' || value === 'https') return value;
+  }
+  return req.socket.encrypted ? 'https' : publicScheme;
+}
 
 const DAV_METHODS = new Set([
   'PROPFIND', 'PROPPATCH', 'MKCOL', 'LOCK', 'UNLOCK', 'MOVE', 'COPY', 'OPTIONS',
@@ -66,7 +106,7 @@ function upstreamFor(req) {
   return 'cloud';
 }
 
-function serveAsset(req, res, urlPath) {
+function serveAsset(req, res, urlPath, assetsDir = ASSETS_DIR) {
   let rel;
   try {
     rel = decodeURIComponent(urlPath.slice('/assets/'.length));
@@ -74,8 +114,8 @@ function serveAsset(req, res, urlPath) {
     res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
     return res.end('Bad Request');
   }
-  const file = path.resolve(ASSETS_DIR, rel);
-  if (file !== ASSETS_DIR && !file.startsWith(ASSETS_DIR + path.sep)) {
+  const file = path.resolve(assetsDir, rel);
+  if (file !== assetsDir && !file.startsWith(assetsDir + path.sep)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     return res.end('Forbidden');
   }
@@ -99,12 +139,12 @@ function serveAsset(req, res, urlPath) {
   });
 }
 
-function proxy(req, res, target) {
+function proxy(req, res, target, options = {}) {
   const headers = Object.assign({}, req.headers);
   headers.host = `${target.host}:${target.port}`;
   headers['x-forwarded-for'] = (req.headers['x-forwarded-for'] || '') +
     (req.headers['x-forwarded-for'] ? ', ' : '') + (req.socket.remoteAddress || '');
-  headers['x-forwarded-proto'] = req.headers['x-forwarded-proto'] || 'http';
+  headers['x-forwarded-proto'] = options.forwardedProto || forwardedProto(req);
   headers['x-forwarded-host'] = req.headers.host || '';
 
   const upstreamReq = http.request({
@@ -121,7 +161,7 @@ function proxy(req, res, target) {
   });
 
   upstreamReq.on('error', (err) => {
-    console.error('[gateway] upstream error', target.host + ':' + target.port, req.method, req.url, err.message);
+    console.error('[gateway] upstream error', target.host + ':' + target.port, req.method, sanitizeUrl(req.url), err.message);
     if (!res.headersSent) {
       res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
     }
@@ -132,41 +172,57 @@ function proxy(req, res, target) {
   req.pipe(upstreamReq);
 }
 
-const server = http.createServer((req, res) => {
-  const where = upstreamFor(req);
-  if (DEBUG) console.log('[gateway]', req.method, req.url, '->', where);
-  if (where === 'assets') return serveAsset(req, res, (req.url || '/').split('?')[0]);
-  proxy(req, res, where === 'rclone' ? RCLONE : CLOUD);
-});
+function createServer(options = {}) {
+  const cloud = options.cloud || CLOUD;
+  const rclone = options.rclone || RCLONE;
+  const assetsDir = options.assetsDir || ASSETS_DIR;
+  const debug = Boolean(options.debug);
+  const trustProxy = options.trustProxy === undefined ? TRUST_PROXY : Boolean(options.trustProxy);
+  const publicScheme = options.publicScheme || PUBLIC_SCHEME;
 
-// WebSocket passthrough (CloudRein SocketIO if ever used; WebDAV does not use WS)
-server.on('upgrade', (req, socket, head) => {
-  const isCloud = (req.url || '').startsWith('/socket.io/');
-  const target = isCloud ? CLOUD : RCLONE;
-  const conn = net.connect(target.port, target.host, () => {
-    const lines = [`${req.method} ${req.url} HTTP/1.1`];
-    for (let i = 0; i < req.rawHeaders.length; i += 2) {
-      const key = req.rawHeaders[i];
-      const value = req.rawHeaders[i + 1];
-      if (key.toLowerCase() === 'host') lines.push(`Host: ${target.host}:${target.port}`);
-      else lines.push(`${key}: ${value}`);
-    }
-    conn.write(lines.join('\r\n') + '\r\n\r\n');
-    if (head && head.length) conn.write(head);
-    conn.pipe(socket);
-    socket.pipe(conn);
+  const server = http.createServer((req, res) => {
+    const where = upstreamFor(req);
+    if (debug) console.log('[gateway]', req.method, sanitizeUrl(req.url), '->', where);
+    if (where === 'assets') return serveAsset(req, res, (req.url || '/').split('?')[0], assetsDir);
+    const forwarded = forwardedProto(req, { trustProxy, publicScheme });
+    proxy(req, res, where === 'rclone' ? rclone : cloud, { forwardedProto: forwarded });
   });
-  conn.on('error', () => socket.destroy());
-  socket.on('error', () => conn.destroy());
-});
 
-server.requestTimeout = 0;
-server.headersTimeout = 65000;
-server.keepAliveTimeout = 65000;
+  server.on('upgrade', (req, socket, head) => {
+    const isCloud = (req.url || '').startsWith('/socket.io/');
+    const target = isCloud ? cloud : rclone;
+    const conn = net.connect(target.port, target.host, () => {
+      const lines = [`${req.method} ${req.url} HTTP/1.1`];
+      for (let i = 0; i < req.rawHeaders.length; i += 2) {
+        const key = req.rawHeaders[i];
+        const value = req.rawHeaders[i + 1];
+        if (key.toLowerCase() === 'host') lines.push(`Host: ${target.host}:${target.port}`);
+        else if (key.toLowerCase() !== 'x-forwarded-proto') lines.push(`${key}: ${value}`);
+      }
+      lines.push(`X-Forwarded-Proto: ${forwardedProto(req, { trustProxy, publicScheme })}`);
+      conn.write(lines.join('\r\n') + '\r\n\r\n');
+      if (head && head.length) conn.write(head);
+      conn.pipe(socket);
+      socket.pipe(conn);
+    });
+    conn.on('error', () => socket.destroy());
+    socket.on('error', () => conn.destroy());
+  });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[gateway] listening on 0.0.0.0:${PORT} cloud=${CLOUD.host}:${CLOUD.port} rclone=${RCLONE.host}:${RCLONE.port}`);
-});
+  server.requestTimeout = 0;
+  server.headersTimeout = 65000;
+  server.keepAliveTimeout = 65000;
+  return server;
+}
 
-process.on('SIGTERM', () => server.close(() => process.exit(0)));
-process.on('SIGINT', () => server.close(() => process.exit(0)));
+if (require.main === module) {
+  const server = createServer();
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`[gateway] listening on 0.0.0.0:${PORT} cloud=${CLOUD.host}:${CLOUD.port} rclone=${RCLONE.host}:${RCLONE.port}`);
+  });
+  const shutdown = () => server.close(() => process.exit(0));
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
+
+module.exports = { createServer, sanitizeUrl, forwardedProto, upstreamFor };

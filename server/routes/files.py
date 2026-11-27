@@ -7,7 +7,7 @@ import shutil
 import zipfile
 import io
 from pathlib import Path
-from flask import Blueprint, request, jsonify, send_from_directory, Response
+from flask import Blueprint, current_app, request, jsonify, send_from_directory, Response
 
 from ..config import (
     PROJECT_DIR,
@@ -15,18 +15,123 @@ from ..config import (
     MAX_SINGLE_FILE_SIZE,
     MAX_TOTAL_DOWNLOAD_SIZE,
     MAX_FILES_IN_ZIP,
+    MAX_DIR_DEPTH,
 )
-from ..session import create_session, delete_session, get_cookie, require_auth
+from ..session import (
+    auth_session,
+    client_ip,
+    create_session,
+    delete_session,
+    get_cookie,
+    is_authenticated,
+    require_auth,
+    secure_cookies,
+)
 from ..auth import (
     check_permission,
+    clear_login_failures,
     get_file_permissions,
     get_folder_permission_config,
     is_in_whitelist,
+    login_rate_limited,
+    record_login_failure,
     verify_password,
 )
 
 # 创建蓝图
 files_bp = Blueprint('files', __name__)
+
+
+def _zip_response(tmp_path, download_name):
+    response = current_app.make_response(send_from_directory(
+        os.path.dirname(tmp_path), os.path.basename(tmp_path),
+        as_attachment=True, download_name=download_name
+    ))
+
+    def cleanup():
+        try:
+            os.unlink(tmp_path)
+        except FileNotFoundError:
+            pass
+
+    response.direct_passthrough = False
+    response.call_on_close(cleanup)
+    return response
+
+
+class _DownloadLimitError(Exception):
+    """下载内容超过配置限额；由路由转换为 413/400。"""
+
+    def __init__(self, status, message):
+        super().__init__(message)
+        self.status = status
+        self.message = message
+
+
+def _resolved(path):
+    """统一先走 normpath + realpath，避免 symlink/.. 绕过目录权限。"""
+    return os.path.realpath(os.path.normpath(str(path or "")))
+
+
+def _readable_target(path):
+    target = _resolved(path)
+    if not os.path.exists(target):
+        return None, ('File not found', 404)
+    allowed, reason = check_permission(target, 'read')
+    if not allowed:
+        return None, (reason or 'read permission denied', 403)
+    return target, None
+
+
+def _dir_files(root):
+    """列出目录内真实文件；跳过逃逸到目录外的 symlink，并执行深度限制。"""
+    resolved_root = _resolved(root)
+    for dirpath, dirnames, filenames in os.walk(resolved_root, followlinks=False):
+        rel = os.path.relpath(dirpath, resolved_root)
+        depth = 0 if rel == '.' else rel.count(os.sep) + 1
+        if depth > MAX_DIR_DEPTH:
+            raise _DownloadLimitError(400, '目录层级超过限制')
+        dirnames[:] = [name for name in dirnames
+                       if not os.path.islink(os.path.join(dirpath, name))]
+        for name in filenames:
+            full = os.path.join(dirpath, name)
+            if os.path.islink(full):
+                continue
+            real = os.path.realpath(full)
+            if real != resolved_root and not real.startswith(resolved_root + os.sep):
+                continue
+            yield real
+
+
+def _collect_download_files(items):
+    """先收集并校验总量，再写 zip，避免超限请求留下半成品。"""
+    collected = []
+    total = 0
+    for target, is_dir, root_name in items:
+        if is_dir:
+            for full in _dir_files(target):
+                size = os.path.getsize(full)
+                total += size
+                if total > MAX_TOTAL_DOWNLOAD_SIZE:
+                    raise _DownloadLimitError(413, '下载内容超过总大小限制')
+                if len(collected) >= MAX_FILES_IN_ZIP:
+                    raise _DownloadLimitError(400, '下载文件数量超过限制')
+                collected.append((full, os.path.join(root_name, os.path.relpath(full, target))))
+        else:
+            size = os.path.getsize(target)
+            if size > MAX_SINGLE_FILE_SIZE:
+                raise _DownloadLimitError(413, '单个文件超过下载大小限制')
+            total += size
+            if total > MAX_TOTAL_DOWNLOAD_SIZE:
+                raise _DownloadLimitError(413, '下载内容超过总大小限制')
+            if len(collected) >= MAX_FILES_IN_ZIP:
+                raise _DownloadLimitError(400, '下载文件数量超过限制')
+            collected.append((target, root_name))
+    return collected
+
+
+def _limit_response(exc):
+    return jsonify({'error': exc.message}), exc.status
 
 
 @files_bp.route('/')
@@ -56,17 +161,25 @@ def logo():
 @files_bp.route('/api/login', methods=['POST'])
 def login():
     """登录"""
+    ip = client_ip()
+    if login_rate_limited(ip):
+        return jsonify({'error': 'Too many login attempts'}), 429, {'Retry-After': '600'}
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         password = data.get('password', '')
-        if verify_password(password):
+        if verify_password(password, upgrade=True):
+            clear_login_failures(ip)
             sid = create_session('admin')
             response = jsonify({'success': True})
-            response.set_cookie('sessionid', sid, max_age=3600, httponly=True, samesite='Lax')
+            response.set_cookie(
+                'sessionid', sid, max_age=3600, httponly=True,
+                samesite='Lax', secure=secure_cookies(), path='/'
+            )
             return response
-        else:
-            return jsonify({'error': 'Invalid password'}), 401
-    except Exception as e:
+        record_login_failure(ip)
+        return jsonify({'error': 'Invalid password'}), 401
+    except Exception:
+        record_login_failure(ip)
         return jsonify({'error': 'Bad request'}), 400
 
 
@@ -77,16 +190,27 @@ def logout():
     if sid:
         delete_session(sid)
     response = jsonify({'success': True})
-    response.set_cookie('sessionid', '', max_age=0)
+    response.set_cookie(
+        'sessionid', '', max_age=0, path='/', httponly=True,
+        samesite='Lax', secure=secure_cookies()
+    )
     return response
+
+
+@files_bp.route('/api/session', methods=['GET'])
+def session_info():
+    session = auth_session()
+    return jsonify({
+        'authenticated': session['ok'],
+        'authType': session['authType'],
+        'csrf': session['csrf'],
+    })
 
 
 @files_bp.route('/api/auth/check', methods=['GET'])
 def auth_check():
     """检查认证状态"""
-    sid = get_cookie('sessionid')
-    from ..session import get_session
-    return jsonify({'authenticated': bool(get_session(sid))})
+    return jsonify({'authenticated': is_authenticated()})
 
 
 @files_bp.route('/api/system', methods=['GET'])
@@ -142,8 +266,9 @@ def system_restart():
         restart_thread.start()
         
         return jsonify({'success': True, 'message': '服务重启中...'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("CloudRein file API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @files_bp.route('/api/file', methods=['GET'])
@@ -156,7 +281,7 @@ def file_info():
     if not path:
         return jsonify({'error': "Missing 'path' parameter"}), 400
 
-    file_path = os.path.normpath(path)
+    file_path = _resolved(path)
     if not os.path.exists(file_path):
         return jsonify({'error': f'File not found: {file_path}'}), 404
 
@@ -235,8 +360,14 @@ def file_save():
 
         if not file_path:
             return jsonify({'error': "Missing 'path' parameter"}), 400
+        if not isinstance(content, str):
+            return jsonify({'error': 'content must be a string'}), 400
 
-        file_path = os.path.normpath(file_path)
+        payload_size = len(content.encode('utf-8'))
+        if payload_size > MAX_SINGLE_FILE_SIZE:
+            return jsonify({'error': '文件超过单文件大小限制'}), 413
+
+        file_path = _resolved(file_path)
         allowed, reason = check_permission(file_path, 'write')
         if not allowed:
             return jsonify({'error': reason}), 403
@@ -247,11 +378,12 @@ def file_save():
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(content)
 
-        return jsonify({'success': True, 'path': file_path, 'size': len(content.encode('utf-8'))})
+        return jsonify({'success': True, 'path': file_path, 'size': payload_size})
     except PermissionError:
         return jsonify({'error': 'Permission denied'}), 403
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("CloudRein file API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @files_bp.route('/api/file/create', methods=['POST'])
@@ -272,7 +404,7 @@ def file_create():
             path = os.path.join(parent, name)
         file_type = data.get('type', 'file')
 
-        path = os.path.normpath(path)
+        path = _resolved(path)
         parent = os.path.dirname(path)
 
         if not os.path.exists(parent):
@@ -292,8 +424,9 @@ def file_create():
                 pass
 
         return jsonify({'success': True, 'path': path})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("CloudRein file API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @files_bp.route('/api/file/delete', methods=['POST'])
@@ -313,7 +446,7 @@ def file_delete():
         failed = []
 
         for path in paths:
-            path = os.path.normpath(path)
+            path = os.path.join(_resolved(os.path.dirname(path)), os.path.basename(path))
             if not os.path.exists(path):
                 failed.append({'path': path, 'error': 'File not found'})
                 continue
@@ -327,16 +460,18 @@ def file_delete():
                 else:
                     os.remove(path)
                 deleted.append(path)
-            except Exception as e:
-                failed.append({'path': path, 'error': str(e)})
+            except Exception:
+                current_app.logger.exception("Failed to delete %s", path)
+                failed.append({'path': path, 'error': 'Delete failed'})
 
         msg = f'已删除 {len(deleted)} 项'
         if failed:
             msg += f'，{len(failed)} 项失败'
 
         return jsonify({'success': True, 'deleted': deleted, 'failed': failed, 'message': msg})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("CloudRein file API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @files_bp.route('/api/file/rename', methods=['POST'])
@@ -359,7 +494,7 @@ def file_rename():
         if '/' in new_name or '\\' in new_name:
             return jsonify({'error': 'New name cannot contain path separators'}), 400
 
-        old_path = os.path.normpath(old_path)
+        old_path = os.path.join(_resolved(os.path.dirname(old_path)), os.path.basename(old_path))
         if not os.path.exists(old_path):
             return jsonify({'error': 'File or directory not found'}), 404
 
@@ -387,8 +522,9 @@ def file_rename():
         })
     except PermissionError:
         return jsonify({'error': 'Permission denied'}), 403
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("CloudRein file API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @files_bp.route('/api/file/chmod', methods=['POST'])
@@ -405,7 +541,7 @@ def file_chmod():
         if not path:
             return jsonify({'error': "Missing 'path' parameter"}), 400
 
-        path = os.path.normpath(path)
+        path = _resolved(path)
         if not os.path.exists(path):
             return jsonify({'error': 'File not found'}), 404
 
@@ -417,8 +553,9 @@ def file_chmod():
         os.chmod(path, mode_int)
 
         return jsonify({'success': True, 'path': path, 'mode': mode})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("CloudRein file API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @files_bp.route('/api/file/upload', methods=['POST'])
@@ -436,7 +573,11 @@ def file_upload():
         if not file:
             return jsonify({'error': 'No file uploaded'}), 400
 
-        dir_path = os.path.normpath(dir_path)
+        # multipart 有边界与头开销，预留 1MB；落盘后再按真实大小复核。
+        if request.content_length and request.content_length > MAX_SINGLE_FILE_SIZE + 1024 * 1024:
+            return jsonify({'error': '文件超过单文件大小限制'}), 413
+
+        dir_path = _resolved(dir_path)
 
         allowed, reason = check_permission(dir_path, 'write')
         if not allowed:
@@ -460,9 +601,17 @@ def file_upload():
 
         file.save(final_path)
 
+        if os.path.getsize(final_path) > MAX_SINGLE_FILE_SIZE:
+            try:
+                os.unlink(final_path)
+            except OSError:
+                pass
+            return jsonify({'error': '文件超过单文件大小限制'}), 413
+
         return jsonify({'success': True, 'path': final_path})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("CloudRein file API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @files_bp.route('/api/file/download', methods=['GET'])
@@ -475,35 +624,36 @@ def file_download():
     if not path:
         return jsonify({'error': "Missing 'path' parameter"}), 400
 
-    path = os.path.normpath(path)
-    if not os.path.exists(path):
-        return jsonify({'error': 'File not found'}), 404
+    target, error = _readable_target(path)
+    if error:
+        message, status = error
+        return jsonify({'error': message}), status
 
-    allowed, reason = check_permission(path, 'read')
-    if not allowed:
-        return jsonify({'error': reason}), 403
+    if os.path.isdir(target):
+        dirname = os.path.basename(target) or 'root'
+        try:
+            entries = _collect_download_files([(target, True, dirname)])
+        except _DownloadLimitError as exc:
+            return _limit_response(exc)
 
-    if os.path.isdir(path):
         import tempfile
-        import urllib.parse
-        dirname = os.path.basename(path) or 'root'
-
         with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
             tmp_path = tmp.name
 
-        with zipfile.ZipFile(tmp_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for root, dirs, files in os.walk(path):
-                for file in files:
-                    file_full = os.path.join(root, file)
-                    arcname = os.path.relpath(file_full, os.path.dirname(path))
+        try:
+            with zipfile.ZipFile(tmp_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for file_full, arcname in entries:
                     zf.write(file_full, arcname)
+        except Exception:
+            os.unlink(tmp_path)
+            raise
 
-        return send_from_directory(os.path.dirname(tmp_path), os.path.basename(tmp_path), as_attachment=True, download_name=f"{dirname}.zip")
+        return _zip_response(tmp_path, f"{dirname}.zip")
 
-    else:
-        import urllib.parse
-        filename = os.path.basename(path)
-        return send_from_directory(os.path.dirname(path), filename, as_attachment=True)
+    if os.path.getsize(target) > MAX_SINGLE_FILE_SIZE:
+        return jsonify({'error': '单个文件超过下载大小限制'}), 413
+
+    return send_from_directory(os.path.dirname(target), os.path.basename(target), as_attachment=True)
 
 
 @files_bp.route('/api/file/download/batch', methods=['POST'])
@@ -514,34 +664,41 @@ def batch_download():
 
     try:
         data = request.json
-        paths = data.get('paths', [])
+        paths = data.get('paths') if isinstance(data, dict) else None
 
-        if not paths:
+        if not isinstance(paths, list) or not paths:
             return jsonify({'error': "Missing 'paths' parameter"}), 400
 
+        targets = []
         for p in paths:
-            allowed, reason = check_permission(p, 'read')
-            if not allowed:
-                return jsonify({'error': f'Access denied: {p}'}), 403
+            if not isinstance(p, str) or not p.strip():
+                return jsonify({'error': 'Invalid path'}), 400
+            target, error = _readable_target(p)
+            if error:
+                message, status = error
+                return jsonify({'error': f'Access denied: {message}'}), status
+            targets.append((target, os.path.isdir(target), os.path.basename(target) or 'root'))
+
+        try:
+            entries = _collect_download_files(targets)
+        except _DownloadLimitError as exc:
+            return _limit_response(exc)
 
         import tempfile
-        import urllib.parse
-
         with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
             tmp_path = tmp.name
 
-        with zipfile.ZipFile(tmp_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for path in paths:
-                path = os.path.normpath(path)
-                if os.path.isdir(path):
-                    for root, dirs, files in os.walk(path):
-                        for file in files:
-                            file_full = os.path.join(root, file)
-                            arcname = os.path.relpath(file_full, os.path.dirname(path))
-                            zf.write(file_full, arcname)
-                else:
-                    zf.write(path, os.path.basename(path))
+        try:
+            with zipfile.ZipFile(tmp_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for file_full, arcname in entries:
+                    zf.write(file_full, arcname)
+        except Exception:
+            os.unlink(tmp_path)
+            raise
 
-        return send_from_directory(os.path.dirname(tmp_path), os.path.basename(tmp_path), as_attachment=True, download_name="download.zip")
+        return _zip_response(tmp_path, "download.zip")
+    except _DownloadLimitError as exc:
+        return _limit_response(exc)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        current_app.logger.exception("Batch download failed")
+        return jsonify({'error': 'Internal server error'}), 500

@@ -3,7 +3,7 @@
 """
 
 import os
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 
 from ..session import require_auth
 from ..auth import (
@@ -83,5 +83,6 @@ def whitelist():
             whitelist = load_whitelist()
             return jsonify({'whitelist': format_whitelist_with_types(whitelist)})
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Whitelist API operation failed")
+        return jsonify({'error': 'Internal server error'}), 500

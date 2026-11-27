@@ -1789,7 +1789,7 @@
                 </div>
                 <div class="login-field" style="margin-bottom:16px;">
                     <label for="newPassword">新密码</label>
-                    <input type="password" id="newPassword" placeholder="输入新密码（至少4位）" autocomplete="new-password">
+                    <input type="password" id="newPassword" placeholder="输入新密码（至少12位）" autocomplete="new-password">
                 </div>
                 <div class="login-field" style="margin-bottom:20px;">
                     <label for="confirmPassword">确认新密码</label>
@@ -1802,7 +1802,7 @@
             <div style="margin-top:20px;padding:12px;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.3);border-radius:8px;">
                 <div style="color:#58a6ff;font-weight:600;margin-bottom:6px;font-size:0.9em;">💡 提示</div>
                 <ul style="color:#8b949e;font-size:0.8em;margin-left:14px;line-height:1.5;">
-                    <li>新密码长度至少4位</li>
+                    <li>新密码长度至少12位</li>
                     <li>修改成功后需要重新登录</li>
                     <li>请妥善保管密码</li>
                 </ul>
@@ -1823,6 +1823,62 @@ const BASE_PATH = (() => {
 })();
 
 function apiUrl(path) { return BASE_PATH + path; }
+
+const nativeFetch = window.fetch.bind(window);
+let csrfToken = '';
+let csrfRequest = null;
+
+async function ensureCsrf(force = false) {
+    if (csrfToken && !force) return csrfToken;
+    if (csrfRequest) return csrfRequest;
+    csrfRequest = (async () => {
+        const response = await nativeFetch(apiUrl('/api/session'), {
+            credentials: 'same-origin',
+            cache: 'no-store'
+        });
+        if (!response.ok) throw new Error('无法获取安全会话');
+        const data = await response.json();
+        csrfToken = data.authenticated ? data.csrf : '';
+        return csrfToken;
+    })();
+    try {
+        return await csrfRequest;
+    } finally {
+        csrfRequest = null;
+    }
+}
+
+async function apiFetch(path, options = {}) {
+    const method = (options.method || 'GET').toUpperCase();
+    const isWrite = method !== 'GET' && method !== 'HEAD';
+    const isLogin = path === apiUrl('/api/login');
+    const headers = new Headers(options.headers || {});
+    if (isWrite && !isLogin) {
+        const token = await ensureCsrf();
+        if (token) headers.set('X-CSRF-Token', token);
+    }
+    const requestOptions = {
+        ...options,
+        headers,
+        credentials: options.credentials || 'same-origin',
+        cache: 'no-store'
+    };
+    let response = await nativeFetch(path, requestOptions);
+    if (response.status === 403) {
+        const detail = await response.clone().json().catch(() => ({}));
+        if (detail.error === 'csrf' && isWrite && !isLogin) {
+            await ensureCsrf(true);
+            const retryHeaders = new Headers(headers);
+            if (csrfToken) retryHeaders.set('X-CSRF-Token', csrfToken);
+            response = await nativeFetch(path, { ...requestOptions, headers: retryHeaders });
+        }
+    }
+    if (response.status === 401) {
+        csrfToken = '';
+        if (!isLogin) showLogin();
+    }
+    return response;
+}
 
 const HOME_PATH = '/data/webdav';
 
@@ -1859,7 +1915,7 @@ let quickPathsCache = null;
 async function getQuickPaths() {
     if (quickPathsCache !== null) return quickPathsCache;
     try {
-        const resp = await fetch(apiUrl('/api/quickpaths'), { method: 'GET' });
+        const resp = await apiFetch(apiUrl('/api/quickpaths'), { method: 'GET' });
         const data = await resp.json();
         quickPathsCache = data.quick_paths || DEFAULT_QUICK_PATHS;
         return quickPathsCache;
@@ -1871,7 +1927,7 @@ async function getQuickPaths() {
 // 保存快捷路径到服务器
 async function saveQuickPaths(paths) {
     try {
-        const resp = await fetch(apiUrl('/api/quickpaths'), {
+        const resp = await apiFetch(apiUrl('/api/quickpaths'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ quick_paths: paths })
@@ -1931,8 +1987,8 @@ async function loadUserConfig() {
     try {
         // 并行加载表单配置和原始配置文件
         const [configResp, rawResp] = await Promise.all([
-            fetch(apiUrl('/api/userconfig'), { method: 'GET' }),
-            fetch(apiUrl('/api/userconfig/raw'), { method: 'GET' })
+            apiFetch(apiUrl('/api/userconfig'), { method: 'GET' }),
+            apiFetch(apiUrl('/api/userconfig/raw'), { method: 'GET' })
         ]);
         
         const configData = await configResp.json();
@@ -2011,7 +2067,7 @@ async function saveUserConfig() {
     msgEl.textContent = '正在保存...';
     
     try {
-        const resp = await fetch(apiUrl('/api/userconfig'), {
+        const resp = await apiFetch(apiUrl('/api/userconfig'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ config })
@@ -2052,7 +2108,7 @@ async function resetUserConfig() {
     msgEl.textContent = '正在重置...';
     
     try {
-        const resp = await fetch(apiUrl('/api/userconfig/reset'), { method: 'POST' });
+        const resp = await apiFetch(apiUrl('/api/userconfig/reset'), { method: 'POST' });
         const data = await resp.json();
         
         if (data.success) {
@@ -2102,7 +2158,7 @@ async function restartService() {
     
     try {
         // 调用重启API
-        const resp = await fetch(apiUrl('/api/system/restart'), { 
+        const resp = await apiFetch(apiUrl('/api/system/restart'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -2119,7 +2175,7 @@ async function restartService() {
             const checkService = async () => {
                 retryCount++;
                 try {
-                    const checkResp = await fetch(apiUrl('/api/auth/check'), { 
+                    const checkResp = await apiFetch(apiUrl('/api/auth/check'), {
                         method: 'GET',
                         signal: AbortSignal.timeout(2000) // 2秒超时
                     });
@@ -2176,7 +2232,7 @@ async function restartService() {
 async function loadRawConfig() {
     const msgEl = document.getElementById('sysConfigMessage');
     try {
-        const resp = await fetch(apiUrl('/api/userconfig/raw'), { method: 'GET' });
+        const resp = await apiFetch(apiUrl('/api/userconfig/raw'), { method: 'GET' });
         const data = await resp.json();
         if (data.content !== undefined) {
             document.getElementById('configRawEditor').value = data.content;
@@ -2217,7 +2273,7 @@ async function saveRawConfig() {
     msgEl.textContent = '正在保存...';
     
     try {
-        const resp = await fetch(apiUrl('/api/userconfig/raw'), {
+        const resp = await apiFetch(apiUrl('/api/userconfig/raw'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ content })
@@ -2285,8 +2341,8 @@ async function doChangePassword() {
         return;
     }
     
-    if (newPwd.length < 4) {
-        errorEl.textContent = '新密码长度至少4位';
+    if (newPwd.length < 12) {
+        errorEl.textContent = '新密码长度至少12位';
         errorEl.style.display = 'block';
         return;
     }
@@ -2298,7 +2354,7 @@ async function doChangePassword() {
     }
     
     try {
-        const resp = await fetch(apiUrl('/api/changepwd'), {
+        const resp = await apiFetch(apiUrl('/api/changepwd'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ old_password: oldPwd, new_password: newPwd })
@@ -2386,7 +2442,7 @@ async function addQuickPathFromPanel() {
     
     // 校验路径是否存在
     try {
-        const checkResp = await fetch(apiUrl('/api/file?path=') + encodeURIComponent(path));
+        const checkResp = await apiFetch(apiUrl('/api/file?path=') + encodeURIComponent(path));
         if (!checkResp.ok) {
             if (checkResp.status === 404) {
                 showToast('路径不存在: ' + path, 'error');
@@ -2584,7 +2640,7 @@ let ocrModels = [];
 
 async function loadOcrModels() {
     try {
-        const res = await fetch(apiUrl('/api/ai/models'));
+        const res = await apiFetch(apiUrl('/api/ai/models'));
         if (res.ok) {
             ocrModels = await res.json();
             const select = document.getElementById('ocrModelSelect');
@@ -2674,7 +2730,7 @@ async function executeOcr() {
     }
 
     try {
-        const res = await fetch(apiUrl('/api/ai/ocr'), {
+        const res = await apiFetch(apiUrl('/api/ai/ocr'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -2865,7 +2921,7 @@ async function addWhitelistPathFromPanel() {
     const path = input.value.trim();
     if (!path) { showNotification('请输入路径', 'error'); return; }
     try {
-        const resp = await fetch(apiUrl('/api/whitelist'), {
+        const resp = await apiFetch(apiUrl('/api/whitelist'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'add', path })
@@ -2908,7 +2964,7 @@ async function loadPathWithoutPush() {
     selectedItems.clear();
     buildBreadcrumb(raw);
     try {
-        const resp = await fetch(apiUrl('/api/file?path=') + encodeURIComponent(raw));
+        const resp = await apiFetch(apiUrl('/api/file?path=') + encodeURIComponent(raw));
         const data = await resp.json();
         hideLoading();
         if (!resp.ok) {
@@ -2923,14 +2979,16 @@ async function loadPathWithoutPush() {
 
 async function checkAuth() {
     try {
-        const resp = await fetch(apiUrl('/api/auth/check'));
+        const resp = await apiFetch(apiUrl('/api/session'));
         const data = await resp.json();
+        csrfToken = data.authenticated ? data.csrf : '';
         if (data.authenticated) hideLogin();
         else showLogin();
-    } catch { showLogin(); }
+    } catch { csrfToken = ''; showLogin(); }
 }
 
 function showLogin() {
+    csrfToken = '';
     stopMonitor();
     document.getElementById('loginOverlay').classList.add('visible');
     setTimeout(() => document.getElementById('loginPassword').focus(), 50);
@@ -2951,16 +3009,21 @@ async function doLogin() {
     btn.disabled = true;
     btn.textContent = '验证中...';
     try {
-        const resp = await fetch(apiUrl('/api/login'), {
+        const resp = await apiFetch(apiUrl('/api/login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password }),
         });
         if (resp.ok) {
+            csrfToken = '';
             hideLogin();
             setPath(document.getElementById('pathInput').value.trim() || HOME_PATH);
         }
         else {
+            const data = await resp.json().catch(() => ({}));
+            document.getElementById('loginError').textContent = resp.status === 429
+                ? '尝试次数过多，请 10 分钟后再试'
+                : (data.error || '密码错误，请重试');
             document.getElementById('loginError').classList.add('visible');
             document.getElementById('loginPassword').value = '';
             document.getElementById('loginPassword').focus();
@@ -2973,8 +3036,12 @@ async function doLogin() {
 
 async function doLogout() {
     stopMonitor();
-    await fetch(apiUrl('/api/logout'), { method: 'POST' });
-    showLogin();
+    try {
+        await apiFetch(apiUrl('/api/logout'), { method: 'POST' });
+    } finally {
+        csrfToken = '';
+        showLogin();
+    }
 }
 
 function setPath(p) {
@@ -3059,7 +3126,7 @@ async function loadPath() {
     selectedItems.clear();
     buildBreadcrumb(raw);
     try {
-        const resp = await fetch(apiUrl('/api/file?path=') + encodeURIComponent(raw));
+        const resp = await apiFetch(apiUrl('/api/file?path=') + encodeURIComponent(raw));
         const data = await resp.json();
         hideLoading();
         if (!resp.ok) {
@@ -3136,7 +3203,7 @@ async function downloadSelected() {
     }
     showNotification('正在打包...', 'info');
     try {
-        const resp = await fetch(apiUrl('/api/file/download/batch'), {
+        const resp = await apiFetch(apiUrl('/api/file/download/batch'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paths })
@@ -3181,7 +3248,7 @@ async function doDelete() {
     const paths = Array.from(selectedItems);
     if (paths.length === 0) return;
     try {
-        const resp = await fetch(apiUrl('/api/file/delete'), {
+        const resp = await apiFetch(apiUrl('/api/file/delete'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paths })
@@ -3583,7 +3650,7 @@ async function saveFile() {
     const saveBtn = document.querySelector('.toggle-btn[onclick="saveFile()"]');
     if (saveBtn) { saveBtn.textContent = '保存中...'; saveBtn.disabled = true; }
     try {
-        const resp = await fetch(apiUrl('/api/file/save'), {
+        const resp = await apiFetch(apiUrl('/api/file/save'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: currentFileData.path, content: newContent })
@@ -3648,7 +3715,7 @@ async function doCreate(type) {
     const name = document.getElementById('createName').value.trim();
     if (!name) { showNotification('请输入名称', 'error'); return; }
     try {
-        const resp = await fetch(apiUrl('/api/file/create'), {
+        const resp = await apiFetch(apiUrl('/api/file/create'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ parent: currentDirPath, name: name, type: type })
@@ -3706,7 +3773,7 @@ function updateOctalDisplay() {
 async function doChmod() {
     const mode = document.getElementById('chmodOctal').value;
     try {
-        const resp = await fetch(apiUrl('/api/file/chmod'), {
+        const resp = await apiFetch(apiUrl('/api/file/chmod'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: chmodTargetPath, mode })
@@ -3757,7 +3824,7 @@ async function doRename() {
         return;
     }
     try {
-        const resp = await fetch(apiUrl('/api/file/rename'), {
+        const resp = await apiFetch(apiUrl('/api/file/rename'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: renameTargetPath, new_name: newName })
@@ -3821,7 +3888,7 @@ async function doUpload() {
         formData.append('file', file);
         formData.append('path', currentDirPath);
         try {
-            const resp = await fetch(apiUrl('/api/file/upload'), { method: 'POST', body: formData });
+            const resp = await apiFetch(apiUrl('/api/file/upload'), { method: 'POST', body: formData });
             if (resp.ok) successCount++; else errorCount++;
         } catch (e) { errorCount++; }
     }
@@ -3889,7 +3956,7 @@ function updateMonitorControls() {
 
 async function loadWhitelist() {
     try {
-        const resp = await fetch(apiUrl('/api/whitelist'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const resp = await apiFetch(apiUrl('/api/whitelist'));
         if (resp.status === 401) { showLogin(); return; }
         const data = await resp.json();
         renderWhitelist(data.whitelist || []);
@@ -3926,7 +3993,7 @@ async function resetWhitelistToDefault() {
     if (confirm('确定要恢复默认白名单吗？这将覆盖当前配置。')) {
         const defaultWhitelist = ['/tmp', '/var/tmp'];
         try {
-            const resp = await fetch(apiUrl('/api/whitelist'), {
+            const resp = await apiFetch(apiUrl('/api/whitelist'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'set', whitelist: defaultWhitelist })
@@ -3946,7 +4013,7 @@ async function resetWhitelistToDefault() {
 
 async function removeWhitelistPath(path) {
     try {
-        const resp = await fetch(apiUrl('/api/whitelist'), {
+        const resp = await apiFetch(apiUrl('/api/whitelist'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'remove', path })
@@ -3970,7 +4037,7 @@ document.addEventListener('visibilitychange', () => {
 
 async function fetchSystemInfo() {
     try {
-        const resp = await fetch(apiUrl('/api/system'));
+        const resp = await apiFetch(apiUrl('/api/system'));
         if (resp.status === 401) { showLogin(); return; }
         const d = await resp.json();
         renderMonitor(d);
@@ -4169,7 +4236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchHistoryData() {
     try {
-        const resp = await fetch(apiUrl(`/api/system/history?hours=${currentHistoryHours}`));
+        const resp = await apiFetch(apiUrl(`/api/system/history?hours=${currentHistoryHours}`));
         if (resp.status === 401) return;
         const data = await resp.json();
         renderCharts(data);

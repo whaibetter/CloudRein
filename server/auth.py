@@ -8,6 +8,10 @@ import pwd
 import grp
 import hashlib
 import hmac
+import secrets
+import tempfile
+import threading
+import time
 from typing import Optional
 
 from .config import (
@@ -119,7 +123,8 @@ def get_file_permissions(path: str) -> dict:
             "mtime": st.st_mtime,
         }
     except Exception as e:
-        return {"error": str(e)}
+        print(f"Failed to read permissions for {path}: {e}")
+        return {"error": "Unable to read permissions"}
 
 
 def get_folder_permission_config(path: str) -> dict:
@@ -151,33 +156,112 @@ def check_permission(path: str, action: str) -> tuple:
 
 
 # === 密码验证 ===
-def verify_password(password: str) -> bool:
-    """验证密码 - 从密码文件读取哈希"""
+SCRYPT_PREFIX = "scrypt$16384$8$1$"
+LOGIN_FAILURE_LIMIT = 10
+LOGIN_FAILURE_WINDOW = 600
+_login_failures = {}
+_login_failures_lock = threading.Lock()
+
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    digest = hashlib.scrypt(
+        password.encode("utf-8"),
+        salt=salt.encode("ascii"),
+        n=16384,
+        r=8,
+        p=1,
+        dklen=32,
+        maxmem=64 * 1024 * 1024,
+    ).hex()
+    return SCRYPT_PREFIX + salt + "$" + digest
+
+
+def _write_password_hash(password_hash: str) -> None:
+    PASSWORD_FILE.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=".passwd-", dir=str(PASSWORD_FILE.parent))
     try:
-        if PASSWORD_FILE.exists():
-            with PASSWORD_FILE.open("r") as f:
-                stored_hash = f.read().strip()
-            return hmac.compare_digest(
-                stored_hash,
-                hashlib.sha256(password.encode()).hexdigest()
-            )
-        return False
-    except Exception:
-        return False
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="ascii") as handle:
+            handle.write(password_hash + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, PASSWORD_FILE)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def _password_status(password: str) -> str:
+    if not isinstance(password, str):
+        return "invalid"
+    try:
+        if not PASSWORD_FILE.exists():
+            return "invalid"
+        stored_hash = PASSWORD_FILE.read_text(encoding="ascii").strip()
+        if stored_hash.startswith(SCRYPT_PREFIX):
+            parts = stored_hash.split("$")
+            if len(parts) != 6:
+                return "invalid"
+            digest = hashlib.scrypt(
+                password.encode("utf-8"),
+                salt=parts[4].encode("ascii"),
+                n=int(parts[1]),
+                r=int(parts[2]),
+                p=1,
+                dklen=32,
+                maxmem=64 * 1024 * 1024,
+            ).hex()
+            return "valid" if hmac.compare_digest(digest, parts[5]) else "invalid"
+        legacy = hashlib.sha256(password.encode("utf-8")).hexdigest()
+        return "legacy" if hmac.compare_digest(stored_hash, legacy) else "invalid"
+    except (OSError, ValueError, TypeError):
+        return "invalid"
+
+
+def verify_password(password: str, upgrade: bool = False) -> bool:
+    """验证密码；旧 SHA-256 密码可在成功登录后升级"""
+    status = _password_status(password)
+    if status == "legacy" and upgrade:
+        try:
+            _write_password_hash(hash_password(password))
+        except OSError:
+            pass
+    return status in ("valid", "legacy")
+
+
+def login_rate_limited(ip: str) -> bool:
+    now = time.monotonic()
+    with _login_failures_lock:
+        for key, attempts in list(_login_failures.items()):
+            if not attempts or now - attempts[-1] >= LOGIN_FAILURE_WINDOW:
+                _login_failures.pop(key, None)
+        attempts = _login_failures.get(ip, [])
+        return len(attempts) >= LOGIN_FAILURE_LIMIT
+
+
+def record_login_failure(ip: str) -> None:
+    now = time.monotonic()
+    with _login_failures_lock:
+        attempts = [value for value in _login_failures.get(ip, [])
+                    if now - value < LOGIN_FAILURE_WINDOW]
+        attempts.append(now)
+        _login_failures[ip] = attempts
+
+
+def clear_login_failures(ip: str) -> None:
+    with _login_failures_lock:
+        _login_failures.pop(ip, None)
 
 
 def change_password(old_password: str, new_password: str) -> tuple:
     """修改密码 - 验证旧密码后设置新密码"""
     if not verify_password(old_password):
         return False, "旧密码错误"
-    if not new_password or len(new_password) < 4:
-        return False, "新密码长度至少4位"
+    if not isinstance(new_password, str) or len(new_password) < 12:
+        return False, "新密码长度至少12位"
     try:
-        new_hash = hashlib.sha256(new_password.encode()).hexdigest()
-        PASSWORD_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with PASSWORD_FILE.open("w") as f:
-            f.write(new_hash)
-        os.chmod(PASSWORD_FILE, 0o600)
+        _write_password_hash(hash_password(new_password))
         return True, "密码修改成功"
-    except Exception as e:
-        return False, f"修改失败: {e}"
+    except OSError:
+        return False, "修改失败"

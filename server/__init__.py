@@ -5,7 +5,7 @@ CloudRein Server - Modular Package
 
 import os
 from pathlib import Path
-from flask import Flask
+from flask import Flask, request
 from flask_socketio import SocketIO
 
 # 项目根目录
@@ -33,7 +33,40 @@ def create_app() -> Flask:
     # 创建Flask应用
     app = Flask(__name__, static_folder=None)
     app.config['SECRET_KEY'] = os.urandom(32)
-    socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+    allowed_origins = [value.strip() for value in
+                       os.environ.get("CLOUDREIN_ALLOWED_ORIGINS", "").split(",")
+                       if value.strip()]
+    socketio = SocketIO(
+        app,
+        cors_allowed_origins=allowed_origins,
+        async_mode='threading'
+    )
+
+    from .session import origin_ok, write_guard_error
+
+    @app.get("/api/health")
+    def _public_health():
+        return {"ok": True}
+
+    @app.before_request
+    def _protect_api_writes():
+        if not request.path.startswith('/api/') or request.method in ('GET', 'HEAD'):
+            return None
+        if not origin_ok():
+            return write_guard_error()
+        if request.path == '/api/login':
+            return None
+        return write_guard_error()
+
+    @app.errorhandler(Exception)
+    def _handle_api_error(exc):
+        from werkzeug.exceptions import HTTPException
+        if isinstance(exc, HTTPException):
+            return exc
+        app.logger.exception("CloudRein request failed")
+        if request.path.startswith('/api/'):
+            return {"error": "Internal server error"}, 500
+        raise exc
 
     # 注册路由蓝图
     from .routes import register_routes
