@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="color-scheme" content="dark">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudRein · 文件库</title>
     <!-- Favicon -->
@@ -67,12 +68,40 @@
     <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
     <script src="/assets/cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
     <style>
+        /* ===== 主题 A · 深空青 Token（对齐仓库根目录 tokens.css）=====
+           本服务 index.html 由 Flask 每次读盘原样返回、无 CSP，故内联而非外链；
+           规则层只引用变量，不要在规则里新写颜色字面量。 */
+        :root{
+            color-scheme: dark;
+            --bg:#0B0E14;
+            --surface:#121824;
+            --surface-2:#1A2230;
+            --inset:#0F1420;
+            --border:#232C3B;
+            --border-strong:#34405A;
+            --text:#E6EDF5;
+            --text-2:#8A97A8;
+            --text-3:#5C6A7D;
+            --on-accent:#08201C;
+            --on-danger:#2B0A0A;
+            --accent:#2DD4BF;
+            --accent-2:#5EA0FF;
+            --accent-hover:#5FE3D0;
+            --ok:#34D399;
+            --warn:#F5B445;
+            --danger:#F87171;
+            --radius:10px;
+            --radius-sm:8px;
+            --font-ui:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+            --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+        }
+        html{ scrollbar-color: var(--border-strong) var(--bg); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', monospace;
-            background: #0d1117;
-            color: #c9d1d9;
+            background: var(--bg);
+            color: var(--text);
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -80,8 +109,8 @@
         }
 
         header {
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             padding: 14px 24px;
             display: flex;
             align-items: center;
@@ -91,18 +120,18 @@
 
         header h1 {
             font-size: 1.1em;
-            color: #58a6ff;
+            color: var(--accent);
             font-weight: 600;
             letter-spacing: 0.5px;
         }
 
         .tag {
             font-size: 0.7em;
-            background: #21262d;
-            color: #8b949e;
+            background: var(--surface-2);
+            color: var(--text-2);
             padding: 2px 8px;
             border-radius: 12px;
-            border: 1px solid #30363d;
+            border: 1px solid var(--border);
         }
 
         /* ── Nav Tabs ── */
@@ -115,7 +144,7 @@
         .nav-tab {
             background: none;
             border: none;
-            color: #8b949e;
+            color: var(--text-2);
             padding: 6px 14px;
             font-size: 0.88em;
             cursor: pointer;
@@ -123,13 +152,13 @@
             transition: all 0.15s;
         }
 
-        .nav-tab:hover { color: #c9d1d9; background: #21262d; }
-        .nav-tab.active { color: #58a6ff; background: #21262d; font-weight: 600; }
+        .nav-tab:hover { color: var(--text); background: var(--surface-2); }
+        .nav-tab.active { color: var(--accent); background: var(--surface-2); font-weight: 600; }
 
         /* ── Common ── */
         .search-bar {
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             padding: 12px 24px;
             display: flex;
             gap: 8px;
@@ -138,11 +167,11 @@
 
         .path-input {
             flex: 1;
-            background: #0d1117;
-            border: 1px solid #30363d;
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 6px;
             padding: 8px 14px;
-            color: #c9d1d9;
+            color: var(--text);
             font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
             font-size: 0.95em;
             outline: none;
@@ -150,14 +179,14 @@
         }
 
         .path-input:focus {
-            border-color: #58a6ff;
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1);
         }
 
         .btn {
-            background: #21262d;
-            color: #c9d1d9;
-            border: 1px solid #30363d;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
             border-radius: 6px;
             padding: 8px 18px;
             cursor: pointer;
@@ -166,17 +195,17 @@
             white-space: nowrap;
         }
 
-        .btn:hover { background: #30363d; border-color: #8b949e; }
-        .btn.primary { background: #1f6feb; border-color: #388bfd; color: #fff; }
-        .btn.primary:hover { background: #388bfd; }
-        .btn.danger { background: #da3633; border-color: #f85149; color: #fff; }
-        .btn.danger:hover { background: #f85149; }
-        .btn.success { background: #238636; border-color: #2ea043; color: #fff; }
-        .btn.success:hover { background: #2ea043; }
+        .btn:hover { background: var(--border); border-color: var(--text-2); }
+        .btn.primary { background: var(--accent); border-color: var(--accent-hover); color: var(--on-accent); }
+        .btn.primary:hover { background: var(--accent-hover); }
+        .btn.danger { background: var(--danger); border-color: var(--danger); color: var(--on-danger); }
+        .btn.danger:hover { background: var(--danger); }
+        .btn.success { background: var(--ok); border-color: var(--ok); color: var(--on-accent); }
+        .btn.success:hover { background: var(--ok); }
 
         .quick-paths {
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             padding: 6px 24px;
             display: flex;
             gap: 6px;
@@ -186,9 +215,9 @@
         }
 
         .quick-btn {
-            background: #21262d;
-            border: 1px solid #30363d;
-            color: #8b949e;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-2);
             padding: 3px 10px;
             border-radius: 4px;
             font-size: 0.8em;
@@ -197,14 +226,14 @@
             transition: all 0.15s;
         }
 
-        .quick-btn:hover { color: #58a6ff; border-color: #58a6ff; background: #0d1117; }
+        .quick-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--bg); }
 
         .breadcrumb {
             padding: 8px 24px;
             font-size: 0.85em;
-            color: #8b949e;
-            background: #0d1117;
-            border-bottom: 1px solid #21262d;
+            color: var(--text-2);
+            background: var(--bg);
+            border-bottom: 1px solid var(--surface-2);
             min-height: 34px;
             display: flex;
             align-items: center;
@@ -213,9 +242,9 @@
             flex-wrap: wrap;
         }
 
-        .breadcrumb span { color: #58a6ff; cursor: pointer; }
+        .breadcrumb span { color: var(--accent); cursor: pointer; }
         .breadcrumb span:hover { text-decoration: underline; }
-        .breadcrumb .sep { color: #30363d; }
+        .breadcrumb .sep { color: var(--border); }
 
         .content-area {
             flex: 1;
@@ -228,10 +257,10 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 24px;
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             font-size: 0.85em;
-            color: #8b949e;
+            color: var(--text-2);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -245,7 +274,7 @@
             font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', monospace;
             font-size: 0.88em;
             line-height: 1.6;
-            color: #e6edf3;
+            color: var(--text);
             white-space: pre-wrap;
             word-break: break-all;
             tab-size: 4;
@@ -253,62 +282,62 @@
         }
 
         .line { display: flex; gap: 0; }
-        .line-num { user-select: none; color: #484f58; min-width: 44px; text-align: right; padding-right: 16px; flex-shrink: 0; }
+        .line-num { user-select: none; color: var(--text-3); min-width: 44px; text-align: right; padding-right: 16px; flex-shrink: 0; }
         .line-content { flex: 1; }
 
         .dir-table { width: 100%; border-collapse: collapse; }
-        .dir-table th { background: #161b22; padding: 10px 12px; text-align: left; font-size: 0.85em; color: #8b949e; font-weight: 500; border-bottom: 1px solid #30363d; position: sticky; top: 0; }
+        .dir-table th { background: var(--surface); padding: 10px 12px; text-align: left; font-size: 0.85em; color: var(--text-2); font-weight: 500; border-bottom: 1px solid var(--border); position: sticky; top: 0; }
         .dir-table th.sortable { cursor: pointer; user-select: none; transition: color 0.15s; }
-        .dir-table th.sortable:hover { color: #58a6ff; }
+        .dir-table th.sortable:hover { color: var(--accent); }
         .dir-table th.sortable::after { content: ' ⇅'; opacity: 0.3; font-size: 0.8em; }
-        .dir-table th.sort-asc::after { content: ' ↑'; opacity: 1; color: #58a6ff; }
-        .dir-table th.sort-desc::after { content: ' ↓'; opacity: 1; color: #58a6ff; }
-        .dir-table td { padding: 8px 12px; border-bottom: 1px solid #21262d; font-size: 0.9em; }
-        .dir-table tr:hover td { background: #161b22; }
+        .dir-table th.sort-asc::after { content: ' ↑'; opacity: 1; color: var(--accent); }
+        .dir-table th.sort-desc::after { content: ' ↓'; opacity: 1; color: var(--accent); }
+        .dir-table td { padding: 8px 12px; border-bottom: 1px solid var(--surface-2); font-size: 0.9em; }
+        .dir-table tr:hover td { background: var(--surface); }
         .dir-icon { margin-right: 8px; }
-        .dir-name { color: #58a6ff; cursor: pointer; }
+        .dir-name { color: var(--accent); cursor: pointer; }
         .dir-name:hover { text-decoration: underline; }
-        .file-name { color: #c9d1d9; cursor: pointer; }
-        .file-name:hover { color: #58a6ff; text-decoration: underline; }
-        .file-size { color: #8b949e; text-align: right; font-size: 0.85em; }
+        .file-name { color: var(--text); cursor: pointer; }
+        .file-name:hover { color: var(--accent); text-decoration: underline; }
+        .file-size { color: var(--text-2); text-align: right; font-size: 0.85em; }
 
-        .state-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; gap: 12px; color: #8b949e; }
+        .state-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; gap: 12px; color: var(--text-2); }
         .state-icon { font-size: 3em; }
-        .state-title { font-size: 1.1em; color: #c9d1d9; }
+        .state-title { font-size: 1.1em; color: var(--text); }
         .state-msg { font-size: 0.9em; max-width: 400px; text-align: center; }
-        .error { color: #f85149; }
+        .error { color: var(--danger); }
 
-        .loading-bar { height: 2px; background: #58a6ff; width: 0; transition: width 0.3s; position: fixed; top: 0; left: 0; z-index: 100; }
+        .loading-bar { height: 2px; background: var(--accent); width: 0; transition: width 0.3s; position: fixed; top: 0; left: 0; z-index: 100; }
 
         .view-toggle { display: flex; gap: 4px; }
-        .toggle-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 12px; border-radius: 6px; font-size: 0.82em; cursor: pointer; transition: all 0.15s; }
-        .toggle-btn:hover { background: #30363d; border-color: #8b949e; }
-        .toggle-btn.active { background: #1f6feb; border-color: #388bfd; color: #fff; }
+        .toggle-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 4px 12px; border-radius: 6px; font-size: 0.82em; cursor: pointer; transition: all 0.15s; }
+        .toggle-btn:hover { background: var(--border); border-color: var(--text-2); }
+        .toggle-btn.active { background: var(--accent); border-color: var(--accent-hover); color: var(--on-accent); }
 
         /* ── Markdown ── */
-        .md-body { padding: 32px 48px; max-width: 860px; margin: 0 auto; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 0.95em; line-height: 1.75; color: #e6edf3; overflow-x: hidden; }
-        .md-body h1, .md-body h2, .md-body h3, .md-body h4, .md-body h5, .md-body h6 { color: #e6edf3; margin: 1.5em 0 0.5em; font-weight: 600; line-height: 1.3; }
-        .md-body h1 { font-size: 2em; border-bottom: 1px solid #30363d; padding-bottom: 0.3em; }
-        .md-body h2 { font-size: 1.5em; border-bottom: 1px solid #21262d; padding-bottom: 0.25em; }
+        .md-body { padding: 32px 48px; max-width: 860px; margin: 0 auto; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 0.95em; line-height: 1.75; color: var(--text); overflow-x: hidden; }
+        .md-body h1, .md-body h2, .md-body h3, .md-body h4, .md-body h5, .md-body h6 { color: var(--text); margin: 1.5em 0 0.5em; font-weight: 600; line-height: 1.3; }
+        .md-body h1 { font-size: 2em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+        .md-body h2 { font-size: 1.5em; border-bottom: 1px solid var(--surface-2); padding-bottom: 0.25em; }
         .md-body h3 { font-size: 1.25em; }
         .md-body p { margin: 0.75em 0; overflow-wrap: break-word; word-wrap: break-word; }
-        .md-body a { color: #58a6ff; text-decoration: none; }
+        .md-body a { color: var(--accent); text-decoration: none; }
         .md-body a:hover { text-decoration: underline; }
-        .md-body code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 0.88em; background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 0.15em 0.4em; color: #e6edf3; word-break: break-all; }
-        .md-body pre { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 1em 0; white-space: pre; word-break: normal; counter-reset: none; max-width: 100%; }
-        .md-body pre code { background: none; border: none; padding: 0; font-size: 0.87em; color: #e6edf3; }
-        .md-body blockquote { border-left: 4px solid #30363d; margin: 1em 0; padding: 0.5em 1em; color: #8b949e; background: #161b22; border-radius: 0 4px 4px 0; }
+        .md-body code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 0.88em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.15em 0.4em; color: var(--text); word-break: break-all; }
+        .md-body pre { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 1em 0; white-space: pre; word-break: normal; counter-reset: none; max-width: 100%; }
+        .md-body pre code { background: none; border: none; padding: 0; font-size: 0.87em; color: var(--text); }
+        .md-body blockquote { border-left: 4px solid var(--border); margin: 1em 0; padding: 0.5em 1em; color: var(--text-2); background: var(--surface); border-radius: 0 4px 4px 0; }
         .md-body blockquote p { margin: 0; }
         .md-body ul, .md-body ol { padding-left: 2em; margin: 0.75em 0; }
         .md-body li { margin: 0.3em 0; }
         .md-body .table-wrap { overflow-x: auto; margin: 1em 0; max-width: 100%; }
         .md-body table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.9em; display: block; max-width: fit-content; }
-        .md-body th { background: #161b22; color: #c9d1d9; font-weight: 600; padding: 8px 12px; border: 1px solid #30363d; text-align: left; white-space: nowrap; }
-        .md-body td { padding: 7px 12px; border: 1px solid #21262d; white-space: pre-wrap; word-break: break-word; max-width: 400px; }
-        .md-body tr:nth-child(even) td { background: #161b22; }
-        .md-body hr { border: none; border-top: 1px solid #30363d; margin: 2em 0; }
+        .md-body th { background: var(--surface); color: var(--text); font-weight: 600; padding: 8px 12px; border: 1px solid var(--border); text-align: left; white-space: nowrap; }
+        .md-body td { padding: 7px 12px; border: 1px solid var(--surface-2); white-space: pre-wrap; word-break: break-word; max-width: 400px; }
+        .md-body tr:nth-child(even) td { background: var(--surface); }
+        .md-body hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
         .md-body img { max-width: 100%; border-radius: 6px; }
-        .md-body input[type="checkbox"] { margin-right: 6px; accent-color: #58a6ff; }
+        .md-body input[type="checkbox"] { margin-right: 6px; accent-color: var(--accent); }
 
         /* ── Toast ── */
         .toast {
@@ -316,12 +345,12 @@
             bottom: 24px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: #161b22;
-            border: 1px solid #30363d;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 12px 24px;
             font-size: 0.9em;
-            color: #c9d1d9;
+            color: var(--text);
             z-index: 9999;
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -333,103 +362,103 @@
             transform: translateX(-50%) translateY(0);
         }
         .toast.success {
-            background: rgba(35, 134, 54, 0.9);
-            border-color: #238636;
-            color: #fff;
+            background: rgba(52, 211, 153, 0.9);
+            border-color: var(--ok);
+            color: var(--on-accent);
         }
         .toast.error {
-            background: rgba(248, 81, 73, 0.9);
-            border-color: #f85149;
-            color: #fff;
+            background: rgba(248, 113, 113, 0.9);
+            border-color: var(--danger);
+            color: var(--on-danger);
         }
         .toast.info {
-            background: rgba(88, 166, 255, 0.9);
-            border-color: #58a6ff;
-            color: #fff;
+            background: rgba(45, 212, 191, 0.9);
+            border-color: var(--accent);
+            color: var(--on-accent);
         }
 
         /* ── Login ── */
-        #loginOverlay { display: none; position: fixed; inset: 0; background: #0d1117; z-index: 1000; justify-content: center; align-items: center; }
+        #loginOverlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 1000; justify-content: center; align-items: center; }
         #loginOverlay.visible { display: flex; }
-        .login-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 40px 36px; width: 340px; display: flex; flex-direction: column; gap: 20px; }
-        .login-card h2 { font-size: 1.3em; color: #e6edf3; text-align: center; font-weight: 600; }
-        .login-card .subtitle { text-align: center; font-size: 0.85em; color: #8b949e; margin-top: -12px; }
+        .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px 36px; width: 340px; display: flex; flex-direction: column; gap: 20px; }
+        .login-card h2 { font-size: 1.3em; color: var(--text); text-align: center; font-weight: 600; }
+        .login-card .subtitle { text-align: center; font-size: 0.85em; color: var(--text-2); margin-top: -12px; }
         .login-field { display: flex; flex-direction: column; gap: 6px; }
-        .login-field label { font-size: 0.85em; color: #8b949e; }
-        .login-field input { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 10px 14px; color: #e6edf3; font-size: 0.95em; outline: none; transition: border-color 0.2s; }
-        .login-field input:focus { border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1); }
-        .login-btn { background: #1f6feb; border: 1px solid #388bfd; border-radius: 6px; color: #fff; padding: 10px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-        .login-btn:hover { background: #388bfd; }
-        .login-btn:disabled { background: #21262d; border-color: #30363d; color: #484f58; cursor: not-allowed; }
-        .login-error { display: none; background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.4); border-radius: 6px; padding: 8px 12px; font-size: 0.85em; color: #f85149; text-align: center; }
+        .login-field label { font-size: 0.85em; color: var(--text-2); }
+        .login-field input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: var(--text); font-size: 0.95em; outline: none; transition: border-color 0.2s; }
+        .login-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1); }
+        .login-btn { background: var(--accent); border: 1px solid var(--accent-hover); border-radius: 6px; color: var(--on-accent); padding: 10px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+        .login-btn:hover { background: var(--accent-hover); }
+        .login-btn:disabled { background: var(--surface-2); border-color: var(--border); color: var(--text-3); cursor: not-allowed; }
+        .login-error { display: none; background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.4); border-radius: 6px; padding: 8px 12px; font-size: 0.85em; color: var(--danger); text-align: center; }
         .login-error.visible { display: block; }
 
-        .settings-btn { margin-left: auto; background: none; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; padding: 4px 12px; font-size: 0.82em; cursor: pointer; transition: all 0.15s; }
-        .settings-btn:hover { color: #58a6ff; border-color: #58a6ff; }
-        .logout-btn { background: none; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; padding: 4px 12px; font-size: 0.82em; cursor: pointer; transition: all 0.15s; }
-        .logout-btn:hover { color: #f85149; border-color: #f85149; }
+        .settings-btn { margin-left: auto; background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-2); padding: 4px 12px; font-size: 0.82em; cursor: pointer; transition: all 0.15s; }
+        .settings-btn:hover { color: var(--accent); border-color: var(--accent); }
+        .logout-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-2); padding: 4px 12px; font-size: 0.82em; cursor: pointer; transition: all 0.15s; }
+        .logout-btn:hover { color: var(--danger); border-color: var(--danger); }
 
         /* ── System Monitor Dashboard ── */
         .monitor-wrap { padding: 24px; overflow-y: auto; flex: 1; }
         .mon-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .mon-header h2 { font-size: 1.15em; color: #e6edf3; font-weight: 600; }
-        .mon-meta { font-size: 0.8em; color: #484f58; display: flex; gap: 16px; align-items: center; }
-        .mon-live { display: inline-flex; align-items: center; gap: 5px; color: #4ade80; font-size: 0.82em; }
-        .mon-live-dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
+        .mon-header h2 { font-size: 1.15em; color: var(--text); font-weight: 600; }
+        .mon-meta { font-size: 0.8em; color: var(--text-3); display: flex; gap: 16px; align-items: center; }
+        .mon-live { display: inline-flex; align-items: center; gap: 5px; color: var(--ok); font-size: 0.82em; }
+        .mon-live-dot { width: 6px; height: 6px; background: var(--ok); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .mon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
-        .mon-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; }
-        .mon-card-title { font-size: 0.82em; color: #8b949e; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
-        .mon-big-num { font-size: 2em; font-weight: 700; color: #e6edf3; line-height: 1; margin-bottom: 4px; font-family: 'Cascadia Code', 'Fira Code', monospace; }
-        .mon-sub { font-size: 0.82em; color: #484f58; }
-        .pbar-wrap { background: #21262d; border-radius: 4px; height: 8px; margin: 10px 0 6px; overflow: hidden; }
+        .mon-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+        .mon-card-title { font-size: 0.82em; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+        .mon-big-num { font-size: 2em; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 4px; font-family: 'Cascadia Code', 'Fira Code', monospace; }
+        .mon-sub { font-size: 0.82em; color: var(--text-3); }
+        .pbar-wrap { background: var(--surface-2); border-radius: 4px; height: 8px; margin: 10px 0 6px; overflow: hidden; }
         .pbar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-        .pbar-green { background: #4ade80; }
-        .pbar-yellow { background: #facc15; }
-        .pbar-red { background: #f85149; }
-        .mon-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.88em; border-bottom: 1px solid #21262d; }
+        .pbar-green { background: var(--ok); }
+        .pbar-yellow { background: var(--warn); }
+        .pbar-red { background: var(--danger); }
+        .mon-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.88em; border-bottom: 1px solid var(--surface-2); }
         .mon-row:last-child { border-bottom: none; }
-        .mon-row .label { color: #8b949e; }
-        .mon-row .val { color: #e6edf3; font-family: monospace; }
+        .mon-row .label { color: var(--text-2); }
+        .mon-row .val { color: var(--text); font-family: monospace; }
         .disk-item { margin-bottom: 12px; }
         .disk-item:last-child { margin-bottom: 0; }
-        .disk-mount { font-family: monospace; font-size: 0.88em; color: #58a6ff; }
-        .disk-device { font-size: 0.78em; color: #484f58; }
-        .disk-detail { display: flex; justify-content: space-between; font-size: 0.82em; color: #8b949e; margin-top: 2px; }
-        .net-rate { font-size: 1.4em; font-weight: 600; color: #e6edf3; font-family: monospace; }
-        .net-label { font-size: 0.78em; color: #8b949e; margin-top: 2px; }
+        .disk-mount { font-family: monospace; font-size: 0.88em; color: var(--accent); }
+        .disk-device { font-size: 0.78em; color: var(--text-3); }
+        .disk-detail { display: flex; justify-content: space-between; font-size: 0.82em; color: var(--text-2); margin-top: 2px; }
+        .net-rate { font-size: 1.4em; font-weight: 600; color: var(--text); font-family: monospace; }
+        .net-label { font-size: 0.78em; color: var(--text-2); margin-top: 2px; }
         
         /* 监控控制面板 */
-        .mon-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: #161b22; border-radius: 6px; border: 1px solid #30363d; }
+        .mon-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: var(--surface); border-radius: 6px; border: 1px solid var(--border); }
         .mon-controls-group { display: flex; align-items: center; gap: 8px; }
-        .mon-controls-label { font-size: 0.85em; color: #8b949e; }
-        .toggle-btn { padding: 6px 14px; font-size: 0.85em; background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .toggle-btn:hover { background: #30363d; }
-        .toggle-btn.active { background: #238636; border-color: #2ea043; color: #fff; }
-        .toggle-btn.paused { background: #da3633; border-color: #f85149; color: #fff; }
-        .refresh-btn { padding: 6px 12px; background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 0.85em; }
-        .refresh-btn:hover { background: #30363d; }
+        .mon-controls-label { font-size: 0.85em; color: var(--text-2); }
+        .toggle-btn { padding: 6px 14px; font-size: 0.85em; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .toggle-btn:hover { background: var(--border); }
+        .toggle-btn.active { background: var(--ok); border-color: var(--ok); color: var(--on-accent); }
+        .toggle-btn.paused { background: var(--danger); border-color: var(--danger); color: var(--on-danger); }
+        .refresh-btn { padding: 6px 12px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 0.85em; }
+        .refresh-btn:hover { background: var(--border); }
         
         /* 历史图表 */
         .chart-section { margin-top: 20px; }
         .chart-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-        .chart-tab { padding: 8px 16px; font-size: 0.85em; background: #21262d; border: 1px solid #30363d; color: #8b949e; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .chart-tab:hover { background: #30363d; color: #c9d1d9; }
-        .chart-tab.active { background: #1f6feb; border-color: #388bfd; color: #fff; }
+        .chart-tab { padding: 8px 16px; font-size: 0.85em; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .chart-tab:hover { background: var(--border); color: var(--text); }
+        .chart-tab.active { background: var(--accent); border-color: var(--accent-hover); color: var(--on-accent); }
         .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; }
-        .chart-card { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 16px; }
-        .chart-card-title { font-size: 0.9em; font-weight: 600; color: #c9d1d9; margin-bottom: 12px; }
+        .chart-card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+        .chart-card-title { font-size: 0.9em; font-weight: 600; color: var(--text); margin-bottom: 12px; }
         .chart-container { position: relative; height: 200px; }
         
         /* 磁盘 IO */
-        .io-rate { font-size: 1.2em; font-weight: 600; color: #e6edf3; font-family: monospace; }
-        .io-label { font-size: 0.75em; color: #8b949e; }
+        .io-rate { font-size: 1.2em; font-weight: 600; color: var(--text); font-family: monospace; }
+        .io-label { font-size: 0.75em; color: var(--text-2); }
         
         .net-pair { display: flex; gap: 32px; margin-bottom: 12px; }
         .proc-table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
-        .proc-table th { color: #8b949e; font-weight: 500; text-align: left; padding: 4px 8px; border-bottom: 1px solid #30363d; }
-        .proc-table td { padding: 4px 8px; border-bottom: 1px solid #21262d; color: #c9d1d9; font-family: monospace; }
-        .proc-table tr:hover td { background: #0d1117; }
+        .proc-table th { color: var(--text-2); font-weight: 500; text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+        .proc-table td { padding: 4px 8px; border-bottom: 1px solid var(--surface-2); color: var(--text); font-family: monospace; }
+        .proc-table tr:hover td { background: var(--bg); }
         .mon-card.wide { grid-column: 1 / -1; }
         .section-hidden { display: none !important; }
         
@@ -437,20 +466,20 @@
         .edit-textarea {
             width: 100%;
             min-height: calc(100vh - 200px);
-            background: #0d1117;
+            background: var(--bg);
             border: none;
             padding: 16px 24px;
             font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', monospace;
             font-size: 0.88em;
             line-height: 1.6;
-            color: #e6edf3;
+            color: var(--text);
             resize: vertical;
             outline: none;
             tab-size: 4;
             white-space: pre;
             overflow-x: auto;
         }
-        .edit-textarea:focus { box-shadow: inset 0 0 0 1px #30363d; }
+        .edit-textarea:focus { box-shadow: inset 0 0 0 1px var(--border); }
         
         /* CodeMirror Editor Styles */
         .CodeMirror {
@@ -459,32 +488,32 @@
             font-size: 0.88em;
             line-height: 1.6;
             border: none;
-            background: #0d1117;
+            background: var(--bg);
         }
         .CodeMirror-gutters {
-            background: #161b22;
-            border-right: 1px solid #30363d;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
         }
         .CodeMirror-linenumber {
-            color: #484f58;
+            color: var(--text-3);
         }
         .CodeMirror-activeline-background {
-            background: rgba(88, 166, 255, 0.08) !important;
+            background: rgba(45, 212, 191, 0.08) !important;
         }
         .CodeMirror-selected {
-            background: rgba(88, 166, 255, 0.2) !important;
+            background: rgba(45, 212, 191, 0.2) !important;
         }
         .CodeMirror-cursor {
-            border-left-color: #58a6ff;
+            border-left-color: var(--accent);
         }
         .cm-s-dracula .CodeMirror-matchingbracket {
-            color: #50fa7b !important;
+            color: var(--accent) !important;
             font-weight: bold;
         }
         
         /* Syntax Highlighted Code Block */
         .code-block {
-            background: #0d1117;
+            background: var(--bg);
             padding: 0;
             margin: 0;
         }
@@ -499,13 +528,13 @@
         }
         .code-block .line-num {
             user-select: none;
-            color: #484f58;
+            color: var(--text-3);
             min-width: 50px;
             text-align: right;
             padding-right: 16px;
             flex-shrink: 0;
-            background: #161b22;
-            border-right: 1px solid #30363d;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
             padding-left: 8px;
         }
         .code-block .line-code {
@@ -519,24 +548,24 @@
             padding: 0;
         }
         
-        .perm-indicator { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: #21262d; border-radius: 4px; font-size: 0.8em; }
-        .perm-readonly { color: #f85149; }
-        .perm-readwrite { color: #4ade80; }
+        .perm-indicator { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: var(--surface-2); border-radius: 4px; font-size: 0.8em; }
+        .perm-readonly { color: var(--danger); }
+        .perm-readwrite { color: var(--ok); }
         
         /* Toolbar */
-        .dir-toolbar { background: #161b22; border-bottom: 1px solid #30363d; padding: 10px 20px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .toolbar-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; }
-        .toolbar-btn:hover { background: #30363d; border-color: #8b949e; }
+        .dir-toolbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .toolbar-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; font-size: 0.85em; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+        .toolbar-btn:hover { background: var(--border); border-color: var(--text-2); }
         .toolbar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .toolbar-btn.icon-only { padding: 6px 10px; }
-        .toolbar-btn.btn-download { background: rgba(35, 134, 54, 0.15); border-color: #238636; color: #3fb950; }
-        .toolbar-btn.btn-download:hover { background: rgba(35, 134, 54, 0.25); }
-        .toolbar-btn.btn-download:disabled { background: #21262d; border-color: #30363d; color: #484f58; }
-        .toolbar-btn.btn-delete { background: rgba(248, 81, 73, 0.1); border-color: rgba(248, 81, 73, 0.4); color: #f85149; }
-        .toolbar-btn.btn-delete:hover { background: rgba(248, 81, 73, 0.2); }
-        .toolbar-btn.btn-delete:disabled { background: #21262d; border-color: #30363d; color: #484f58; }
+        .toolbar-btn.btn-download { background: rgba(52, 211, 153, 0.15); border-color: var(--ok); color: var(--ok); }
+        .toolbar-btn.btn-download:hover { background: rgba(52, 211, 153, 0.25); }
+        .toolbar-btn.btn-download:disabled { background: var(--surface-2); border-color: var(--border); color: var(--text-3); }
+        .toolbar-btn.btn-delete { background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.4); color: var(--danger); }
+        .toolbar-btn.btn-delete:hover { background: rgba(248, 113, 113, 0.2); }
+        .toolbar-btn.btn-delete:disabled { background: var(--surface-2); border-color: var(--border); color: var(--text-3); }
         .perm-link:hover { text-decoration: underline; }
-        .selection-info { color: #58a6ff; font-size: 0.85em; margin-left: auto; background: rgba(88, 166, 255, 0.1); padding: 4px 10px; border-radius: 4px; }
+        .selection-info { color: var(--accent); font-size: 0.85em; margin-left: auto; background: rgba(45, 212, 191, 0.1); padding: 4px 10px; border-radius: 4px; }
         
         /* Checkbox */
         /* Checkbox - 自定义样式 */
@@ -546,23 +575,23 @@
             -webkit-appearance: none;
             width: 20px;
             height: 20px;
-            border: 2px solid #484f58;
+            border: 2px solid var(--text-3);
             border-radius: 6px;
-            background: #21262d;
+            background: var(--surface-2);
             cursor: pointer;
             position: relative;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             vertical-align: middle;
         }
         .checkbox-cell input[type="checkbox"]:hover {
-            border-color: #58a6ff;
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
             transform: scale(1.05);
         }
         .checkbox-cell input[type="checkbox"]:checked {
-            background: linear-gradient(135deg, #1f6feb 0%, #58a6ff 100%);
-            border-color: #58a6ff;
-            box-shadow: 0 2px 8px rgba(88, 166, 255, 0.4);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent) 100%);
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(45, 212, 191, 0.4);
         }
         .checkbox-cell input[type="checkbox"]:checked::after {
             content: '';
@@ -580,65 +609,65 @@
         }
         /* Action buttons row */
         .action-row { display: flex; gap: 6px; align-items: center; }
-        .action-divider { width: 1px; height: 20px; background: #30363d; margin: 0 6px; }
+        .action-divider { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
         
         /* Action button in table */
-        .action-btn { background: transparent; border: 1px solid transparent; color: #8b949e; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; cursor: pointer; transition: all 0.15s; }
-        .action-btn:hover { background: #21262d; border-color: #30363d; color: #c9d1d9; }
-        .action-btn.btn-download-row:hover { color: #3fb950; border-color: #238636; }
+        .action-btn { background: transparent; border: 1px solid transparent; color: var(--text-2); padding: 4px 8px; border-radius: 4px; font-size: 0.85em; cursor: pointer; transition: all 0.15s; }
+        .action-btn:hover { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+        .action-btn.btn-download-row:hover { color: var(--ok); border-color: var(--ok); }
         
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .modal-overlay.visible { display: flex !important; }
-        .modal-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; min-width: 400px; max-width: 500px; max-height: 80vh; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #30363d; }
-        .modal-header h3 { margin: 0; font-size: 1.1em; color: #e6edf3; }
-        .modal-close { background: none; border: none; color: #8b949e; font-size: 1.5em; cursor: pointer; padding: 0; line-height: 1; }
-        .modal-close:hover { color: #f85149; }
+        .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; min-width: 400px; max-width: 500px; max-height: 80vh; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+        .modal-header h3 { margin: 0; font-size: 1.1em; color: var(--text); }
+        .modal-close { background: none; border: none; color: var(--text-2); font-size: 1.5em; cursor: pointer; padding: 0; line-height: 1; }
+        .modal-close:hover { color: var(--danger); }
         .modal-content { padding: 20px; }
         .modal-field { margin-bottom: 16px; }
-        .modal-field label { display: block; margin-bottom: 6px; font-size: 0.9em; color: #8b949e; }
-        .modal-field input, .modal-field select { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 10px 14px; color: #c9d1d9; font-size: 0.95em; outline: none; }
-        .modal-field input:focus, .modal-field select:focus { border-color: #58a6ff; }
+        .modal-field label { display: block; margin-bottom: 6px; font-size: 0.9em; color: var(--text-2); }
+        .modal-field input, .modal-field select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: var(--text); font-size: 0.95em; outline: none; }
+        .modal-field input:focus, .modal-field select:focus { border-color: var(--accent); }
         .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
         .modal-btn { padding: 8px 20px; border-radius: 6px; font-size: 0.9em; cursor: pointer; transition: all 0.15s; }
-        .modal-btn-cancel { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; }
-        .modal-btn-cancel:hover { background: #30363d; }
-        .modal-btn-primary { background: #238636; border: 1px solid #2ea043; color: #fff; }
-        .modal-btn-primary:hover { background: #2ea043; }
-        .modal-btn-danger { background: #da3633; border: 1px solid #f85149; color: #fff; }
-        .modal-btn-danger:hover { background: #f85149; }
+        .modal-btn-cancel { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
+        .modal-btn-cancel:hover { background: var(--border); }
+        .modal-btn-primary { background: var(--ok); border: 1px solid var(--ok); color: var(--on-accent); }
+        .modal-btn-primary:hover { background: var(--ok); }
+        .modal-btn-danger { background: var(--danger); border: 1px solid var(--danger); color: var(--on-danger); }
+        .modal-btn-danger:hover { background: var(--danger); }
         
         /* Upload */
-        .upload-zone { border: 2px dashed #30363d; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s; }
-        .upload-zone:hover, .upload-zone.dragover { border-color: #58a6ff; background: rgba(88, 166, 255, 0.05); }
+        .upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(45, 212, 191, 0.05); }
         .upload-zone input[type="file"] { display: none; }
         
         /* Permission grid */
         .perm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-        .perm-check { display: flex; flex-direction: column; align-items: center; padding: 10px; background: #21262d; border-radius: 6px; }
-        .perm-check label { font-size: 0.8em; color: #8b949e; margin-bottom: 4px; }
-        .perm-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: #58a6ff; }
+        .perm-check { display: flex; flex-direction: column; align-items: center; padding: 10px; background: var(--surface-2); border-radius: 6px; }
+        .perm-check label { font-size: 0.8em; color: var(--text-2); margin-bottom: 4px; }
+        .perm-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
         
         /* Confirm delete list */
-        .delete-list { max-height: 200px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 10px; margin: 10px 0; }
-        .delete-list-item { padding: 6px 8px; font-family: monospace; font-size: 0.85em; border-bottom: 1px solid #21262d; }
+        .delete-list { max-height: 200px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin: 10px 0; }
+        .delete-list-item { padding: 6px 8px; font-family: monospace; font-size: 0.85em; border-bottom: 1px solid var(--surface-2); }
         .delete-list-item:last-child { border-bottom: none; }
         
         /* Settings Panel */
-        .settings-panel { position: fixed; top: 0; right: -400px; width: 400px; height: 100vh; background: #161b22; border-left: 1px solid #30363d; z-index: 2000; transition: right 0.3s ease; display: flex; flex-direction: column; }
+        .settings-panel { position: fixed; top: 0; right: -400px; width: 400px; height: 100vh; background: var(--surface); border-left: 1px solid var(--border); z-index: 2000; transition: right 0.3s ease; display: flex; flex-direction: column; }
         .settings-panel.open { right: 0; }
-        .settings-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #30363d; }
-        .settings-header h3 { margin: 0; font-size: 1.1em; color: #e6edf3; }
-        .settings-close { background: none; border: none; color: #8b949e; font-size: 1.5em; cursor: pointer; padding: 0; line-height: 1; }
-        .settings-close:hover { color: #f85149; }
+        .settings-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+        .settings-header h3 { margin: 0; font-size: 1.1em; color: var(--text); }
+        .settings-close { background: none; border: none; color: var(--text-2); font-size: 1.5em; cursor: pointer; padding: 0; line-height: 1; }
+        .settings-close:hover { color: var(--danger); }
         .settings-content { flex: 1; overflow-y: auto; padding: 20px; }
         
         /* 自定义滚动条样式 */
         .settings-content::-webkit-scrollbar { width: 8px; }
-        .settings-content::-webkit-scrollbar-track { background: #0d1117; border-radius: 4px; }
-        .settings-content::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
-        .settings-content::-webkit-scrollbar-thumb:hover { background: #484f58; }
+        .settings-content::-webkit-scrollbar-track { background: var(--bg); border-radius: 4px; }
+        .settings-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .settings-content::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
         
         /* 设置面板操作按钮响应式布局 */
         .settings-actions {
@@ -652,8 +681,8 @@
             text-align: center;
             padding: 8px 12px;
         }
-        .btn-danger { color: #f85149 !important; }
-        .btn-danger:hover { background: rgba(248,81,73,0.15) !important; border-color: #f85149 !important; }
+        .btn-danger { color: var(--danger) !important; }
+        .btn-danger:hover { background: rgba(248, 113, 113,0.15) !important; border-color: var(--danger) !important; }
         
         @media (max-width: 600px) {
             .settings-actions {
@@ -683,7 +712,7 @@
         }
         
         .settings-section { margin-bottom: 24px; }
-        .settings-section-title { font-size: 0.82em; color: #8b949e; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+        .settings-section-title { font-size: 0.82em; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
         .settings-panel-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 1999; display: none; }
         .settings-panel-overlay.visible { display: block; }
 
@@ -692,31 +721,31 @@
             display: flex;
             gap: 4px;
             padding: 16px 24px;
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
         }
         .tools-tab {
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 10px 20px;
-            background: #21262d;
-            border: 1px solid #30363d;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            color: #8b949e;
+            color: var(--text-2);
             font-size: 0.9em;
             cursor: pointer;
             transition: all 0.2s;
         }
         .tools-tab:hover:not(:disabled) {
-            background: #30363d;
-            color: #c9d1d9;
-            border-color: #8b949e;
+            background: var(--border);
+            color: var(--text);
+            border-color: var(--text-2);
         }
         .tools-tab.active {
-            background: linear-gradient(135deg, rgba(88, 166, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
-            border-color: #58a6ff;
-            color: #58a6ff;
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.15) 0%, rgba(94, 160, 255, 0.15) 100%);
+            border-color: var(--accent);
+            color: var(--accent);
             font-weight: 600;
         }
         .tools-tab:disabled {
@@ -729,9 +758,9 @@
         .tools-tab-badge {
             font-size: 0.7em;
             padding: 2px 6px;
-            background: #21262d;
+            background: var(--surface-2);
             border-radius: 4px;
-            color: #6e7681;
+            color: var(--text-3);
         }
         .tools-tab-body { display: none; }
         .tools-tab-body.active { display: block; }
@@ -741,8 +770,8 @@
             overflow-y: auto;
         }
         .tools-card {
-            background: #161b22;
-            border: 1px solid #30363d;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
         }
@@ -756,41 +785,41 @@
         }
         .ocr-upload-section {
             padding: 24px;
-            border-right: 1px solid #30363d;
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
         .ocr-upload-zone {
-            border: 2px dashed #30363d;
+            border: 2px dashed var(--border);
             border-radius: 10px;
             padding: 32px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
-            background: #0d1117;
+            background: var(--bg);
         }
         .ocr-upload-zone:hover {
-            border-color: #58a6ff;
-            background: rgba(88, 166, 255, 0.05);
+            border-color: var(--accent);
+            background: rgba(45, 212, 191, 0.05);
         }
         .ocr-upload-zone.dragover {
-            border-color: #58a6ff;
-            background: rgba(88, 166, 255, 0.1);
+            border-color: var(--accent);
+            background: rgba(45, 212, 191, 0.1);
         }
         .ocr-upload-icon {
             width: 64px;
             height: 64px;
-            color: #484f58;
+            color: var(--text-3);
             margin-bottom: 12px;
         }
         .ocr-upload-text {
-            color: #c9d1d9;
+            color: var(--text);
             font-size: 1em;
             margin-bottom: 6px;
         }
         .ocr-upload-hint {
-            color: #6e7681;
+            color: var(--text-3);
             font-size: 0.85em;
         }
         .ocr-preview-img {
@@ -800,7 +829,7 @@
             margin-bottom: 8px;
         }
         .ocr-preview-name {
-            color: #8b949e;
+            color: var(--text-2);
             font-size: 0.85em;
         }
         
@@ -816,26 +845,26 @@
         }
         .ocr-config-item label {
             font-size: 0.85em;
-            color: #8b949e;
+            color: var(--text-2);
             font-weight: 500;
         }
         .ocr-config-item .optional {
             font-size: 0.75em;
-            color: #484f58;
+            color: var(--text-3);
             font-weight: normal;
         }
         .ocr-select, .ocr-input {
-            background: #0d1117;
-            border: 1px solid #30363d;
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 6px;
             padding: 10px 14px;
-            color: #c9d1d9;
+            color: var(--text);
             font-size: 0.9em;
             outline: none;
             transition: border-color 0.2s;
         }
         .ocr-select:focus, .ocr-input:focus {
-            border-color: #58a6ff;
+            border-color: var(--accent);
         }
         .ocr-model-row {
             display: flex;
@@ -869,19 +898,19 @@
         .ocr-result-section {
             display: flex;
             flex-direction: column;
-            background: #0d1117;
+            background: var(--bg);
         }
         .ocr-result-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 24px;
-            border-bottom: 1px solid #30363d;
-            background: #161b22;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
         }
         .ocr-result-title {
             font-size: 0.9em;
-            color: #c9d1d9;
+            color: var(--text);
             font-weight: 600;
         }
         .ocr-result-actions {
@@ -893,17 +922,17 @@
             align-items: center;
             gap: 6px;
             padding: 6px 14px;
-            background: #21262d;
-            border: 1px solid #30363d;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
             border-radius: 6px;
-            color: #c9d1d9;
+            color: var(--text);
             font-size: 0.85em;
             cursor: pointer;
             transition: all 0.15s;
         }
         .ocr-action-btn:hover:not(:disabled) {
-            background: #30363d;
-            border-color: #8b949e;
+            background: var(--border);
+            border-color: var(--text-2);
         }
         .ocr-action-btn:disabled {
             opacity: 0.4;
@@ -916,12 +945,12 @@
             font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
             font-size: 0.9em;
             line-height: 1.6;
-            color: #e6edf3;
+            color: var(--text);
             white-space: pre-wrap;
             word-break: break-word;
         }
         #ocrDebugContainer {
-            border-top: 1px solid #30363d;
+            border-top: 1px solid var(--border);
         }
         .ocr-placeholder {
             display: flex;
@@ -934,47 +963,47 @@
         .ocr-placeholder-icon {
             width: 80px;
             height: 80px;
-            color: #30363d;
+            color: var(--border);
             margin-bottom: 16px;
         }
         .ocr-placeholder-text {
-            color: #484f58;
+            color: var(--text-3);
             font-size: 0.95em;
         }
         
         .ocr-result-item {
-            background: #161b22;
-            border: 1px solid #21262d;
+            background: var(--surface);
+            border: 1px solid var(--surface-2);
             border-radius: 8px;
             padding: 12px 16px;
             margin-bottom: 10px;
             transition: all 0.2s;
         }
         .ocr-result-item:hover {
-            border-color: #30363d;
+            border-color: var(--border);
         }
         .ocr-result-item.ocr-title {
-            background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border-color: rgba(88, 166, 255, 0.3);
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.1) 0%, rgba(94, 160, 255, 0.1) 100%);
+            border-color: rgba(45, 212, 191, 0.3);
         }
         .ocr-type-tag {
             display: inline-block;
             font-size: 0.7em;
             padding: 2px 8px;
-            background: #21262d;
+            background: var(--surface-2);
             border-radius: 4px;
-            color: #8b949e;
+            color: var(--text-2);
             margin-right: 8px;
             font-weight: 500;
         }
         .ocr-type-tag.ocr {
-            background: rgba(88, 166, 255, 0.2);
-            color: #58a6ff;
+            background: rgba(45, 212, 191, 0.2);
+            color: var(--accent);
         }
 
         /* OCR Debug Panel */
         .ocr-debug-panel {
-            background: #161b22;
+            background: var(--surface);
             border: none;
             overflow: hidden;
         }
@@ -983,15 +1012,15 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            background: #21262d;
+            background: var(--surface-2);
             cursor: pointer;
             user-select: none;
             font-size: 0.85em;
-            color: #8b949e;
+            color: var(--text-2);
             transition: background 0.15s;
         }
         .ocr-debug-header:hover {
-            background: #30363d;
+            background: var(--border);
         }
         .ocr-debug-content {
             padding: 16px;
@@ -1004,7 +1033,7 @@
         }
         .ocr-debug-title {
             font-size: 0.8em;
-            color: #58a6ff;
+            color: var(--accent);
             font-weight: 600;
             margin-bottom: 10px;
             display: flex;
@@ -1024,22 +1053,22 @@
             align-items: start;
         }
         .ocr-debug-label {
-            color: #6e7681;
+            color: var(--text-3);
             font-weight: 500;
         }
         .ocr-debug-value {
-            color: #c9d1d9;
+            color: var(--text);
             word-break: break-all;
             line-height: 1.4;
         }
         .ocr-debug-raw {
-            background: #0d1117;
-            border: 1px solid #30363d;
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 6px;
             padding: 12px;
             font-size: 0.75em;
             font-family: monospace;
-            color: #8b949e;
+            color: var(--text-2);
             white-space: pre-wrap;
             word-break: break-word;
             max-height: 200px;
@@ -1048,10 +1077,10 @@
         }
 
         /* ── Responsive Design ─────────────────────────────── */
-        .settings-tabs { display: flex; gap: 0; border-bottom: 1px solid #30363d; }
-        .settings-tab { flex: 1; padding: 12px 8px; background: none; border: none; color: #8b949e; font-size: 0.85em; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
-        .settings-tab:hover { color: #c9d1d9; background: rgba(255,255,255,0.02); }
-        .settings-tab.active { color: #58a6ff; border-bottom-color: #58a6ff; background: rgba(88,166,255,0.05); }
+        .settings-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+        .settings-tab { flex: 1; padding: 12px 8px; background: none; border: none; color: var(--text-2); font-size: 0.85em; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+        .settings-tab:hover { color: var(--text); background: rgba(255,255,255,0.02); }
+        .settings-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(45, 212, 191,0.05); }
         .settings-tab-body { display: none; }
         .settings-tab-body.active { display: block; }
         .quick-path-form { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -1070,7 +1099,7 @@
             }
             .ocr-upload-section {
                 border-right: none;
-                border-bottom: 1px solid #30363d;
+                border-bottom: 1px solid var(--border);
                 padding: 16px;
             }
             .ocr-result-section {
@@ -1152,12 +1181,12 @@
                 display: flex;
                 align-items: flex-start;
                 padding: 12px;
-                background: #161b22;
-                border-bottom: 1px solid #21262d;
+                background: var(--surface);
+                border-bottom: 1px solid var(--surface-2);
                 gap: 10px;
             }
             .file-card:last-child { border-bottom: none; }
-            .file-card:hover { background: #1c2128; }
+            .file-card:hover { background: var(--surface-2); }
             
             .file-card-checkbox {
                 flex-shrink: 0;
@@ -1168,20 +1197,20 @@
                 -webkit-appearance: none;
                 width: 20px;
                 height: 20px;
-                border: 2px solid #484f58;
+                border: 2px solid var(--text-3);
                 border-radius: 6px;
-                background: #21262d;
+                background: var(--surface-2);
                 cursor: pointer;
                 position: relative;
                 transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .file-card-checkbox input[type="checkbox"]:hover {
-                border-color: #58a6ff;
-                box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
             }
             .file-card-checkbox input[type="checkbox"]:checked {
-                background: linear-gradient(135deg, #1f6feb 0%, #58a6ff 100%);
-                border-color: #58a6ff;
+                background: linear-gradient(135deg, var(--accent) 0%, var(--accent) 100%);
+                border-color: var(--accent);
             }
             .file-card-checkbox input[type="checkbox"]:checked::after {
                 content: '';
@@ -1206,22 +1235,22 @@
             }
             
             .file-card-name {
-                color: #58a6ff;
+                color: var(--accent);
                 font-size: 0.95em;
                 cursor: pointer;
                 word-break: break-all;
                 margin-bottom: 4px;
             }
             .file-card-name:hover { text-decoration: underline; }
-            .file-card-name.is-file { color: #c9d1d9; }
-            .file-card-name.is-file:hover { color: #58a6ff; }
+            .file-card-name.is-file { color: var(--text); }
+            .file-card-name.is-file:hover { color: var(--accent); }
             
             .file-card-meta {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 8px 16px;
                 font-size: 0.78em;
-                color: #8b949e;
+                color: var(--text-2);
                 margin-bottom: 6px;
             }
             .file-card-meta-item {
@@ -1229,8 +1258,8 @@
                 align-items: center;
                 gap: 4px;
             }
-            .file-card-meta-label { color: #484f58; }
-            .file-card-meta-value { color: #8b949e; font-family: monospace; }
+            .file-card-meta-label { color: var(--text-3); }
+            .file-card-meta-value { color: var(--text-2); font-family: monospace; }
             
             .file-card-actions {
                 display: flex;
@@ -1239,20 +1268,20 @@
                 flex-wrap: wrap;
             }
             .file-card-btn {
-                background: #21262d;
-                border: 1px solid #30363d;
-                color: #c9d1d9;
+                background: var(--surface-2);
+                border: 1px solid var(--border);
+                color: var(--text);
                 padding: 4px 10px;
                 border-radius: 4px;
                 font-size: 0.78em;
                 cursor: pointer;
                 transition: all 0.15s;
             }
-            .file-card-btn:hover { background: #30363d; border-color: #8b949e; }
-            .file-card-btn.btn-download { color: #3fb950; border-color: #238636; background: rgba(35, 134, 54, 0.15); }
-            .file-card-btn.btn-download:hover { background: rgba(35, 134, 54, 0.25); }
-            .file-card-btn.btn-delete { color: #f85149; border-color: rgba(248, 81, 73, 0.4); background: rgba(248, 81, 73, 0.1); }
-            .file-card-btn.btn-delete:hover { background: rgba(248, 81, 73, 0.2); }
+            .file-card-btn:hover { background: var(--border); border-color: var(--text-2); }
+            .file-card-btn.btn-download { color: var(--ok); border-color: var(--ok); background: rgba(52, 211, 153, 0.15); }
+            .file-card-btn.btn-download:hover { background: rgba(52, 211, 153, 0.25); }
+            .file-card-btn.btn-delete { color: var(--danger); border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.1); }
+            .file-card-btn.btn-delete:hover { background: rgba(248, 113, 113, 0.2); }
 
             /* Toolbar */
             .dir-toolbar { padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
@@ -1328,8 +1357,8 @@
             .proc-card-list { display: block; }
             
             .proc-card {
-                background: #0d1117;
-                border: 1px solid #21262d;
+                background: var(--bg);
+                border: 1px solid var(--surface-2);
                 border-radius: 6px;
                 padding: 10px 12px;
                 margin-bottom: 8px;
@@ -1344,17 +1373,17 @@
             }
             .proc-card-pid {
                 font-family: monospace;
-                color: #58a6ff;
+                color: var(--accent);
                 font-size: 0.9em;
                 font-weight: 600;
             }
             .proc-card-user {
-                color: #8b949e;
+                color: var(--text-2);
                 font-size: 0.78em;
             }
             
             .proc-card-cmd {
-                color: #c9d1d9;
+                color: var(--text);
                 font-size: 0.82em;
                 word-break: break-all;
                 margin-bottom: 6px;
@@ -1371,13 +1400,13 @@
                 align-items: center;
                 gap: 4px;
             }
-            .proc-card-stat-label { color: #484f58; }
+            .proc-card-stat-label { color: var(--text-3); }
             .proc-card-stat-value { 
                 font-family: monospace; 
                 font-weight: 600;
             }
-            .proc-card-stat-value.cpu { color: #f85149; }
-            .proc-card-stat-value.mem { color: #58a6ff; }
+            .proc-card-stat-value.cpu { color: var(--danger); }
+            .proc-card-stat-value.mem { color: var(--accent); }
 
             /* Checkbox */
             .checkbox-cell { width: 32px; }
@@ -1416,6 +1445,21 @@
         #sectionMonitor, #sectionTools { display: none !important; }
         .settings-tab:nth-child(1), .settings-tab:nth-child(3) { display: none !important; }
         #settingsTabWhitelist, #settingsTabSysconfig { display: none !important; }
+
+        /* ===== CodeMirror：把 dracula 的紫灰底收回到主题 A =====
+           dracula.min.css 对背景用了 !important，必须同样用 !important 覆盖 */
+        .cm-s-dracula.CodeMirror { background: var(--inset) !important; color: var(--text) !important; }
+        .cm-s-dracula .CodeMirror-gutters { background: var(--surface) !important; border-right: 1px solid var(--border) !important; }
+        .cm-s-dracula .CodeMirror-linenumber { color: var(--text-3) !important; }
+        .cm-s-dracula .CodeMirror-cursor { border-left-color: var(--accent) !important; }
+        .cm-s-dracula div.CodeMirror-selected { background: rgba(45, 212, 191, 0.18) !important; }
+        .cm-s-dracula .CodeMirror-activeline-background { background: rgba(45, 212, 191, 0.06) !important; }
+        .cm-s-dracula .CodeMirror-matchingbracket { color: var(--accent) !important; }
+        .cm-s-dracula .cm-keyword { color: var(--accent) !important; }
+        .cm-s-dracula .cm-string { color: var(--ok) !important; }
+        .cm-s-dracula .cm-comment { color: var(--text-3) !important; }
+        .cm-s-dracula .cm-number { color: var(--warn) !important; }
+        .cm-s-dracula .cm-variable, .cm-s-dracula .cm-def { color: var(--accent-2) !important; }
     </style>
 </head>
 <body>
@@ -1459,7 +1503,7 @@
     </div>
 
     <div class="quick-paths">
-        <span style="font-size:0.8em;color:#8b949e;align-self:center;flex-shrink:0;">快捷：</span>
+        <span style="font-size:0.8em;color:var(--text-2);align-self:center;flex-shrink:0;">快捷：</span>
         <div id="quickPathsContainer" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;"></div>
     </div>
 
@@ -1621,12 +1665,12 @@
     <div class="settings-content">
         <!-- 删除白名单标签 -->
         <div id="settingsTabWhitelist" class="settings-tab-body">
-            <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px;">只有白名单中的路径才允许删除操作（支持目录和单个文件）</p>
+            <p style="color:var(--text-2);font-size:0.85em;margin-bottom:12px;">只有白名单中的路径才允许删除操作（支持目录和单个文件）</p>
             <div style="display:flex;gap:8px;margin-bottom:16px;">
                 <input type="text" id="newWhitelistPath" class="path-input" placeholder="输入路径，如 /tmp 或 /home/test.txt" style="flex:1">
                 <button class="btn success" onclick="addWhitelistPathFromPanel()">添加</button>
             </div>
-            <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;overflow:hidden;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
                 <div id="whitelistContainer">
                     <div class="state-box" style="padding:20px;">
                         <div class="state-msg">加载中...</div>
@@ -1636,9 +1680,9 @@
             <div style="margin-top:12px;">
                 <button class="btn" onclick="resetWhitelistToDefault()" style="font-size:0.8em;">恢复默认白名单</button>
             </div>
-            <div style="margin-top:12px;padding:12px;background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.3);border-radius:8px;">
-                <div style="color:#f85149;font-weight:600;margin-bottom:6px;font-size:0.9em;">⚠️ 安全提示</div>
-                <ul style="color:#8b949e;font-size:0.8em;margin-left:14px;line-height:1.5;">
+            <div style="margin-top:12px;padding:12px;background:rgba(248, 113, 113,0.1);border:1px solid rgba(248, 113, 113,0.3);border-radius:8px;">
+                <div style="color:var(--danger);font-weight:600;margin-bottom:6px;font-size:0.9em;">⚠️ 安全提示</div>
+                <ul style="color:var(--text-2);font-size:0.8em;margin-left:14px;line-height:1.5;">
                     <li>目录：该目录及其子目录下的所有文件都可以删除</li>
                     <li>文件：仅该特定文件可以删除</li>
                     <li>添加时会校验路径是否存在</li>
@@ -1649,13 +1693,13 @@
         
         <!-- 快捷路径标签 -->
         <div id="settingsTabQuickpaths" class="settings-tab-body active">
-            <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px;">自定义快捷访问路径，方便快速导航（添加时会校验路径是否存在）</p>
+            <p style="color:var(--text-2);font-size:0.85em;margin-bottom:12px;">自定义快捷访问路径，方便快速导航（添加时会校验路径是否存在）</p>
             <div class="quick-path-form">
                 <input type="text" id="newQuickPathInput" class="path-input" placeholder="输入路径，如 /var/log">
                 <input type="text" id="newQuickNameInput" class="path-input" placeholder="显示名称">
                 <button class="btn success" onclick="addQuickPathFromPanel()">添加</button>
             </div>
-            <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;overflow:hidden;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
                 <div id="quickPathsSettingsContainer">
                     <div class="state-box" style="padding:20px;">
                         <div class="state-msg">加载中...</div>
@@ -1669,58 +1713,58 @@
         
         <!-- 系统配置标签 -->
         <div id="settingsTabSysconfig" class="settings-tab-body">
-            <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px;">自定义系统运行参数（修改后点击保存生效）</p>
+            <p style="color:var(--text-2);font-size:0.85em;margin-bottom:12px;">自定义系统运行参数（修改后点击保存生效）</p>
             
             <!-- 会话配置 -->
             <div style="margin-bottom:20px;">
-                <div style="color:#e6edf3;font-weight:600;margin-bottom:10px;font-size:0.95em;">🔐 会话配置</div>
-                <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;">
+                <div style="color:var(--text);font-weight:600;margin-bottom:10px;font-size:0.95em;">🔐 会话配置</div>
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <label style="color:#c9d1d9;font-size:0.9em;">会话超时时间（秒）</label>
+                        <label style="color:var(--text);font-size:0.9em;">会话超时时间（秒）</label>
                         <input type="number" id="configSessionTimeout" class="path-input" style="width:120px;text-align:right;" min="60" max="86400" value="3600">
                     </div>
-                    <div style="color:#484f58;font-size:0.75em;">范围: 60-86400 秒（1分钟 - 24小时），修改后新登录生效</div>
+                    <div style="color:var(--text-3);font-size:0.75em;">范围: 60-86400 秒（1分钟 - 24小时），修改后新登录生效</div>
                 </div>
             </div>
             
             <!-- 默认权限配置 -->
             <div style="margin-bottom:20px;">
-                <div style="color:#e6edf3;font-weight:600;margin-bottom:10px;font-size:0.95em;">🔒 默认权限配置</div>
-                <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;">
+                <div style="color:var(--text);font-weight:600;margin-bottom:10px;font-size:0.95em;">🔒 默认权限配置</div>
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
                     <div style="display:flex;gap:24px;">
-                        <label style="display:flex;align-items:center;gap:8px;color:#c9d1d9;font-size:0.9em;cursor:pointer;">
+                        <label style="display:flex;align-items:center;gap:8px;color:var(--text);font-size:0.9em;cursor:pointer;">
                             <input type="checkbox" id="configDefaultRead" checked> 允许读取
                         </label>
-                        <label style="display:flex;align-items:center;gap:8px;color:#c9d1d9;font-size:0.9em;cursor:pointer;">
+                        <label style="display:flex;align-items:center;gap:8px;color:var(--text);font-size:0.9em;cursor:pointer;">
                             <input type="checkbox" id="configDefaultWrite" checked> 允许写入
                         </label>
                     </div>
-                    <div style="color:#484f58;font-size:0.75em;margin-top:8px;">未单独配置的目录将使用此默认权限</div>
+                    <div style="color:var(--text-3);font-size:0.75em;margin-top:8px;">未单独配置的目录将使用此默认权限</div>
                 </div>
             </div>
             
             <!-- 下载限制配置 -->
             <div style="margin-bottom:20px;">
-                <div style="color:#e6edf3;font-weight:600;margin-bottom:10px;font-size:0.95em;">📦 下载限制配置</div>
-                <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;">
+                <div style="color:var(--text);font-weight:600;margin-bottom:10px;font-size:0.95em;">📦 下载限制配置</div>
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                        <label style="color:#c9d1d9;font-size:0.9em;">单文件最大大小（MB）</label>
+                        <label style="color:var(--text);font-size:0.9em;">单文件最大大小（MB）</label>
                         <input type="number" id="configMaxSingleFileSize" class="path-input" style="width:120px;text-align:right;" min="1" max="1024" value="100">
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                        <label style="color:#c9d1d9;font-size:0.9em;">批量下载最大大小（MB）</label>
+                        <label style="color:var(--text);font-size:0.9em;">批量下载最大大小（MB）</label>
                         <input type="number" id="configMaxTotalDownloadSize" class="path-input" style="width:120px;text-align:right;" min="1" max="2048" value="200">
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                        <label style="color:#c9d1d9;font-size:0.9em;">ZIP 最大文件数</label>
+                        <label style="color:var(--text);font-size:0.9em;">ZIP 最大文件数</label>
                         <input type="number" id="configMaxFilesInZip" class="path-input" style="width:120px;text-align:right;" min="1" max="10000" value="500">
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                        <label style="color:#c9d1d9;font-size:0.9em;">目录最大深度</label>
+                        <label style="color:var(--text);font-size:0.9em;">目录最大深度</label>
                         <input type="number" id="configMaxDirDepth" class="path-input" style="width:120px;text-align:right;" min="1" max="100" value="20">
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <label style="color:#c9d1d9;font-size:0.9em;">文件预览最大大小（MB）</label>
+                        <label style="color:var(--text);font-size:0.9em;">文件预览最大大小（MB）</label>
                         <input type="number" id="configMaxFilePreviewSize" class="path-input" style="width:120px;text-align:right;" min="1" max="50" value="2">
                     </div>
                 </div>
@@ -1728,26 +1772,26 @@
             
             <!-- 监控历史配置 -->
             <div style="margin-bottom:20px;">
-                <div style="color:#e6edf3;font-weight:600;margin-bottom:10px;font-size:0.95em;">📊 监控历史配置</div>
-                <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;">
+                <div style="color:var(--text);font-weight:600;margin-bottom:10px;font-size:0.95em;">📊 监控历史配置</div>
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <label style="color:#c9d1d9;font-size:0.9em;">历史数据保存时长（分钟）</label>
+                        <label style="color:var(--text);font-size:0.9em;">历史数据保存时长（分钟）</label>
                         <input type="number" id="configMonitorHistoryMinutes" class="path-input" style="width:120px;text-align:right;" min="1" max="60" value="60">
                     </div>
-                    <div style="color:#484f58;font-size:0.75em;">范围: 1-60 分钟，数据保存在内存中，时长越短内存占用越少</div>
-                    <div style="color:#484f58;font-size:0.75em;margin-top:4px;">⚠️ 修改后需要重启服务才能生效</div>
+                    <div style="color:var(--text-3);font-size:0.75em;">范围: 1-60 分钟，数据保存在内存中，时长越短内存占用越少</div>
+                    <div style="color:var(--text-3);font-size:0.75em;margin-top:4px;">⚠️ 修改后需要重启服务才能生效</div>
                 </div>
             </div>
             
             <!-- 配置文件直接编辑 -->
             <div style="margin-bottom:20px;">
-                <div style="color:#e6edf3;font-weight:600;margin-bottom:10px;font-size:0.95em;">📝 配置文件编辑</div>
-                <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;">
+                <div style="color:var(--text);font-weight:600;margin-bottom:10px;font-size:0.95em;">📝 配置文件编辑</div>
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span style="color:#8b949e;font-size:0.8em;">直接编辑 user_config.yaml</span>
+                        <span style="color:var(--text-2);font-size:0.8em;">直接编辑 user_config.yaml</span>
                         <button class="btn" style="font-size:0.75em;padding:4px 10px;" onclick="loadRawConfig()">加载</button>
                     </div>
-                    <textarea id="configRawEditor" style="width:100%;height:200px;background:#161b22;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-family:monospace;font-size:0.85em;padding:10px;resize:vertical;box-sizing:border-box;" placeholder="# 点击"加载"获取当前配置
+                    <textarea id="configRawEditor" style="width:100%;height:200px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:monospace;font-size:0.85em;padding:10px;resize:vertical;box-sizing:border-box;" placeholder="# 点击"加载"获取当前配置
 # 示例:
 # session_timeout: 7200
 # default_permissions:
@@ -1764,7 +1808,7 @@
                         <button class="btn" style="font-size:0.8em;" onclick="formatRawConfig()">格式化</button>
                     </div>
                 </div>
-                <div style="color:#484f58;font-size:0.75em;margin-top:8px;">⚠️ 直接编辑配置文件需要 YAML 格式正确，保存后立即生效</div>
+                <div style="color:var(--text-3);font-size:0.75em;margin-top:8px;">⚠️ 直接编辑配置文件需要 YAML 格式正确，保存后立即生效</div>
             </div>
             
             <!-- 操作按钮 -->
@@ -1781,7 +1825,7 @@
 
         <!-- 密码修改标签 -->
         <div id="settingsTabPassword" class="settings-tab-body">
-            <p style="color:#8b949e;font-size:0.85em;margin-bottom:16px;">修改登录密码</p>
+            <p style="color:var(--text-2);font-size:0.85em;margin-bottom:16px;">修改登录密码</p>
             <div style="max-width:320px;">
                 <div class="login-field" style="margin-bottom:16px;">
                     <label for="oldPassword">当前密码</label>
@@ -1797,11 +1841,11 @@
                 </div>
                 <button class="btn primary" onclick="doChangePassword()" style="width:100%;">修改密码</button>
                 <div id="changePwdError" class="login-error" style="margin-top:12px;"></div>
-                <div id="changePwdSuccess" style="display:none;margin-top:12px;padding:10px;background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.4);border-radius:6px;color:#3fb950;font-size:0.85em;text-align:center;"></div>
+                <div id="changePwdSuccess" style="display:none;margin-top:12px;padding:10px;background:rgba(52, 211, 153,0.1);border:1px solid rgba(52, 211, 153,0.4);border-radius:6px;color:var(--ok);font-size:0.85em;text-align:center;"></div>
             </div>
-            <div style="margin-top:20px;padding:12px;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.3);border-radius:8px;">
-                <div style="color:#58a6ff;font-weight:600;margin-bottom:6px;font-size:0.9em;">💡 提示</div>
-                <ul style="color:#8b949e;font-size:0.8em;margin-left:14px;line-height:1.5;">
+            <div style="margin-top:20px;padding:12px;background:rgba(45, 212, 191,0.1);border:1px solid rgba(45, 212, 191,0.3);border-radius:8px;">
+                <div style="color:var(--accent);font-weight:600;margin-bottom:6px;font-size:0.9em;">💡 提示</div>
+                <ul style="color:var(--text-2);font-size:0.8em;margin-left:14px;line-height:1.5;">
                     <li>新密码长度至少12位</li>
                     <li>修改成功后需要重新登录</li>
                     <li>请妥善保管密码</li>
@@ -2061,9 +2105,9 @@ async function saveUserConfig() {
     
     const msgEl = document.getElementById('sysConfigMessage');
     msgEl.style.display = 'block';
-    msgEl.style.background = 'rgba(88,166,255,0.1)';
-    msgEl.style.border = '1px solid rgba(88,166,255,0.3)';
-    msgEl.style.color = '#58a6ff';
+    msgEl.style.background = 'rgba(45, 212, 191,0.1)';
+    msgEl.style.border = '1px solid rgba(45, 212, 191,0.3)';
+    msgEl.style.color = 'var(--accent)';
     msgEl.textContent = '正在保存...';
     
     try {
@@ -2076,21 +2120,21 @@ async function saveUserConfig() {
         
         if (data.success) {
             userConfigCache = data.config;
-            msgEl.style.background = 'rgba(63,185,80,0.1)';
-            msgEl.style.border = '1px solid rgba(63,185,80,0.3)';
-            msgEl.style.color = '#3fb950';
+            msgEl.style.background = 'rgba(52, 211, 153,0.1)';
+            msgEl.style.border = '1px solid rgba(52, 211, 153,0.3)';
+            msgEl.style.color = 'var(--ok)';
             msgEl.textContent = '配置已保存并生效';
             setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
         } else {
-            msgEl.style.background = 'rgba(248,81,73,0.1)';
-            msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-            msgEl.style.color = '#f85149';
+            msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+            msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+            msgEl.style.color = 'var(--danger)';
             msgEl.textContent = data.error || '保存失败';
         }
     } catch (e) {
-        msgEl.style.background = 'rgba(248,81,73,0.1)';
-        msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-        msgEl.style.color = '#f85149';
+        msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+        msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+        msgEl.style.color = 'var(--danger)';
         msgEl.textContent = '保存失败: ' + e.message;
     }
 }
@@ -2102,9 +2146,9 @@ async function resetUserConfig() {
     
     const msgEl = document.getElementById('sysConfigMessage');
     msgEl.style.display = 'block';
-    msgEl.style.background = 'rgba(88,166,255,0.1)';
-    msgEl.style.border = '1px solid rgba(88,166,255,0.3)';
-    msgEl.style.color = '#58a6ff';
+    msgEl.style.background = 'rgba(45, 212, 191,0.1)';
+    msgEl.style.border = '1px solid rgba(45, 212, 191,0.3)';
+    msgEl.style.color = 'var(--accent)';
     msgEl.textContent = '正在重置...';
     
     try {
@@ -2125,21 +2169,21 @@ async function resetUserConfig() {
             // 同时清空编辑器
             document.getElementById('configRawEditor').value = '';
             
-            msgEl.style.background = 'rgba(63,185,80,0.1)';
-            msgEl.style.border = '1px solid rgba(63,185,80,0.3)';
-            msgEl.style.color = '#3fb950';
+            msgEl.style.background = 'rgba(52, 211, 153,0.1)';
+            msgEl.style.border = '1px solid rgba(52, 211, 153,0.3)';
+            msgEl.style.color = 'var(--ok)';
             msgEl.textContent = '配置已重置为默认值';
             setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
         } else {
-            msgEl.style.background = 'rgba(248,81,73,0.1)';
-            msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-            msgEl.style.color = '#f85149';
+            msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+            msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+            msgEl.style.color = 'var(--danger)';
             msgEl.textContent = data.error || '重置失败';
         }
     } catch (e) {
-        msgEl.style.background = 'rgba(248,81,73,0.1)';
-        msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-        msgEl.style.color = '#f85149';
+        msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+        msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+        msgEl.style.color = 'var(--danger)';
         msgEl.textContent = '重置失败: ' + e.message;
     }
 }
@@ -2151,9 +2195,9 @@ async function restartService() {
     
     const msgEl = document.getElementById('sysConfigMessage');
     msgEl.style.display = 'block';
-    msgEl.style.background = 'rgba(248,81,73,0.1)';
-    msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-    msgEl.style.color = '#f85149';
+    msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+    msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+    msgEl.style.color = 'var(--danger)';
     msgEl.textContent = '⏳ 正在重启服务...';
     
     try {
@@ -2182,9 +2226,9 @@ async function restartService() {
                     
                     if (checkResp.ok) {
                         // 服务已恢复
-                        msgEl.style.background = 'rgba(63,185,80,0.1)';
-                        msgEl.style.border = '1px solid rgba(63,185,80,0.3)';
-                        msgEl.style.color = '#3fb950';
+                        msgEl.style.background = 'rgba(52, 211, 153,0.1)';
+                        msgEl.style.border = '1px solid rgba(52, 211, 153,0.3)';
+                        msgEl.style.color = 'var(--ok)';
                         msgEl.textContent = `✅ 服务重启成功！已恢复运行`;
                         
                         // 刷新监控数据
@@ -2204,9 +2248,9 @@ async function restartService() {
                     msgEl.textContent = `⏳ 等待服务恢复... (${retryCount}/${maxRetry})`;
                     setTimeout(checkService, retryInterval);
                 } else {
-                    msgEl.style.background = 'rgba(248,81,73,0.1)';
-                    msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-                    msgEl.style.color = '#f85149';
+                    msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+                    msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+                    msgEl.style.color = 'var(--danger)';
                     msgEl.textContent = '⚠️ 重启超时，请手动检查服务状态';
                 }
                 return false;
@@ -2215,15 +2259,15 @@ async function restartService() {
             // 延迟1秒后开始检测
             setTimeout(checkService, 1000);
         } else {
-            msgEl.style.background = 'rgba(248,81,73,0.1)';
-            msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-            msgEl.style.color = '#f85149';
+            msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+            msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+            msgEl.style.color = 'var(--danger)';
             msgEl.textContent = data.error || '重启失败';
         }
     } catch (e) {
-        msgEl.style.background = 'rgba(248,81,73,0.1)';
-        msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-        msgEl.style.color = '#f85149';
+        msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+        msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+        msgEl.style.color = 'var(--danger)';
         msgEl.textContent = '重启失败: ' + e.message;
     }
 }
@@ -2237,23 +2281,23 @@ async function loadRawConfig() {
         if (data.content !== undefined) {
             document.getElementById('configRawEditor').value = data.content;
             msgEl.style.display = 'block';
-            msgEl.style.background = 'rgba(63,185,80,0.1)';
-            msgEl.style.border = '1px solid rgba(63,185,80,0.3)';
-            msgEl.style.color = '#3fb950';
+            msgEl.style.background = 'rgba(52, 211, 153,0.1)';
+            msgEl.style.border = '1px solid rgba(52, 211, 153,0.3)';
+            msgEl.style.color = 'var(--ok)';
             msgEl.textContent = '配置文件已加载';
             setTimeout(() => { msgEl.style.display = 'none'; }, 2000);
         } else {
             msgEl.style.display = 'block';
-            msgEl.style.background = 'rgba(248,81,73,0.1)';
-            msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-            msgEl.style.color = '#f85149';
+            msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+            msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+            msgEl.style.color = 'var(--danger)';
             msgEl.textContent = data.error || '加载失败';
         }
     } catch (e) {
         msgEl.style.display = 'block';
-        msgEl.style.background = 'rgba(248,81,73,0.1)';
-        msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-        msgEl.style.color = '#f85149';
+        msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+        msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+        msgEl.style.color = 'var(--danger)';
         msgEl.textContent = '加载失败: ' + e.message;
     }
 }
@@ -2267,9 +2311,9 @@ async function saveRawConfig() {
     
     const msgEl = document.getElementById('sysConfigMessage');
     msgEl.style.display = 'block';
-    msgEl.style.background = 'rgba(88,166,255,0.1)';
-    msgEl.style.border = '1px solid rgba(88,166,255,0.3)';
-    msgEl.style.color = '#58a6ff';
+    msgEl.style.background = 'rgba(45, 212, 191,0.1)';
+    msgEl.style.border = '1px solid rgba(45, 212, 191,0.3)';
+    msgEl.style.color = 'var(--accent)';
     msgEl.textContent = '正在保存...';
     
     try {
@@ -2281,24 +2325,24 @@ async function saveRawConfig() {
         const data = await resp.json();
         
         if (data.success) {
-            msgEl.style.background = 'rgba(63,185,80,0.1)';
-            msgEl.style.border = '1px solid rgba(63,185,80,0.3)';
-            msgEl.style.color = '#3fb950';
+            msgEl.style.background = 'rgba(52, 211, 153,0.1)';
+            msgEl.style.border = '1px solid rgba(52, 211, 153,0.3)';
+            msgEl.style.color = 'var(--ok)';
             msgEl.textContent = '配置文件已保存并生效';
             
             // 同步更新表单
             await loadUserConfig();
             setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
         } else {
-            msgEl.style.background = 'rgba(248,81,73,0.1)';
-            msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-            msgEl.style.color = '#f85149';
+            msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+            msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+            msgEl.style.color = 'var(--danger)';
             msgEl.textContent = data.error || '保存失败';
         }
     } catch (e) {
-        msgEl.style.background = 'rgba(248,81,73,0.1)';
-        msgEl.style.border = '1px solid rgba(248,81,73,0.3)';
-        msgEl.style.color = '#f85149';
+        msgEl.style.background = 'rgba(248, 113, 113,0.1)';
+        msgEl.style.border = '1px solid rgba(248, 113, 113,0.3)';
+        msgEl.style.color = 'var(--danger)';
         msgEl.textContent = '保存失败: ' + e.message;
     }
 }
@@ -2317,9 +2361,9 @@ function formatRawConfig() {
     } catch (e) {
         // 如果 jsyaml 未加载，使用简单格式化
         document.getElementById('sysConfigMessage').style.display = 'block';
-        document.getElementById('sysConfigMessage').style.background = 'rgba(248,81,73,0.1)';
-        document.getElementById('sysConfigMessage').style.border = '1px solid rgba(248,81,73,0.3)';
-        document.getElementById('sysConfigMessage').style.color = '#f85149';
+        document.getElementById('sysConfigMessage').style.background = 'rgba(248, 113, 113,0.1)';
+        document.getElementById('sysConfigMessage').style.border = '1px solid rgba(248, 113, 113,0.3)';
+        document.getElementById('sysConfigMessage').style.color = 'var(--danger)';
         document.getElementById('sysConfigMessage').textContent = 'YAML 格式错误: ' + e.message;
     }
 }
@@ -2394,14 +2438,14 @@ async function renderQuickPathsSettings() {
     }
     
     container.innerHTML = paths.map((p, i) => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #21262d;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--surface-2);">
             <div style="flex:1;min-width:0;cursor:pointer;" onclick="editQuickPath(${i})">
-                <div style="color:#e6edf3;font-size:0.9em;">${escHtml(p.name)}</div>
-                <div style="color:#8b949e;font-size:0.78em;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.path)}</div>
+                <div style="color:var(--text);font-size:0.9em;">${escHtml(p.name)}</div>
+                <div style="color:var(--text-2);font-size:0.78em;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.path)}</div>
             </div>
             <div style="display:flex;gap:8px;">
-                <button class="action-btn" style="color:#58a6ff;" onclick="editQuickPath(${i})">修改</button>
-                <button class="action-btn" style="color:#f85149;" onclick="removeQuickPath(${i})">删除</button>
+                <button class="action-btn" style="color:var(--accent);" onclick="editQuickPath(${i})">修改</button>
+                <button class="action-btn" style="color:var(--danger);" onclick="removeQuickPath(${i})">删除</button>
             </div>
         </div>
     `).join('');
@@ -2716,7 +2760,7 @@ async function executeOcr() {
     
     btn.disabled = true;
     btn.innerHTML = '<span class="ocr-btn-icon">⏳</span> 识别中...';
-    resultDiv.innerHTML = '<div style="color:#8b949e;text-align:center;padding:40px;">正在进行 OCR 识别，请稍候...</div>';
+    resultDiv.innerHTML = '<div style="color:var(--text-2);text-align:center;padding:40px;">正在进行 OCR 识别，请稍候...</div>';
     document.getElementById('ocrDebugContainer').innerHTML = '';
 
     const requestData = {
@@ -2767,9 +2811,9 @@ async function executeOcr() {
                         resultHtml += `<div class="ocr-result-item ${itemClass}">${tag}${content}</div>`;
                     }
                 });
-                resultHtml = resultHtml || '<div style="color:#8b949e;text-align:center;padding:20px;">无识别结果</div>';
+                resultHtml = resultHtml || '<div style="color:var(--text-2);text-align:center;padding:20px;">无识别结果</div>';
             } else {
-                resultHtml = escHtml(data.output) || '<div style="color:#8b949e;text-align:center;padding:20px;">无识别结果</div>';
+                resultHtml = escHtml(data.output) || '<div style="color:var(--text-2);text-align:center;padding:20px;">无识别结果</div>';
             }
             
             // 调试信息面板
@@ -2798,7 +2842,7 @@ async function executeOcr() {
                             <div class="ocr-debug-section">
                                 <div class="ocr-debug-title">📥 响应参数</div>
                                 <div class="ocr-debug-grid">
-                                    <div class="ocr-debug-row"><span class="ocr-debug-label">Status:</span><span class="ocr-debug-value" style="color:#4ade80;">${data.debug.response.status}</span></div>
+                                    <div class="ocr-debug-row"><span class="ocr-debug-label">Status:</span><span class="ocr-debug-value" style="color:var(--ok);">${data.debug.response.status}</span></div>
                                     <div class="ocr-debug-row"><span class="ocr-debug-label">Model:</span><span class="ocr-debug-value">${escHtml(data.debug.response.model)}</span></div>
                                     <div class="ocr-debug-row"><span class="ocr-debug-label">Length:</span><span class="ocr-debug-value">${data.debug.response.content_length} chars</span></div>
                                     ${data.debug.response.usage ? `<div class="ocr-debug-row"><span class="ocr-debug-label">Usage:</span><span class="ocr-debug-value">${JSON.stringify(data.debug.response.usage)}</span></div>` : ''}
@@ -2829,12 +2873,12 @@ async function executeOcr() {
                 document.getElementById('ocrApiKey').placeholder = '已配置 (留空使用已保存配置)';
             }
         } else {
-            resultDiv.innerHTML = `<div style="color:#f85149;">识别失败: ${escHtml(data.error || '未知错误')}</div>`;
+            resultDiv.innerHTML = `<div style="color:var(--danger);">识别失败: ${escHtml(data.error || '未知错误')}</div>`;
             document.getElementById('ocrDebugContainer').innerHTML = '';
             showToast('识别失败', 'error');
         }
     } catch (e) {
-        resultDiv.innerHTML = `<div style="color:#f85149;">网络错误: ${escHtml(e.message)}</div>`;
+        resultDiv.innerHTML = `<div style="color:var(--danger);">网络错误: ${escHtml(e.message)}</div>`;
         document.getElementById('ocrDebugContainer').innerHTML = '';
         showToast('网络错误', 'error');
     } finally {
@@ -3147,7 +3191,7 @@ function showError(status, msg, path) {
             <div class="state-icon">${icons[status] || '⚠️'}</div>
             <div class="state-title error">错误 ${status || ''}</div>
             <div class="state-msg">${escHtml(msg)}</div>
-            <div class="state-msg" style="color:#484f58;margin-top:4px;font-family:monospace">${escHtml(path)}</div>
+            <div class="state-msg" style="color:var(--text-3);margin-top:4px;font-family:monospace">${escHtml(path)}</div>
         </div>`;
 }
 
@@ -3232,10 +3276,10 @@ function showDeleteModal(paths) {
     const pathList = paths.map(p => `<div class="delete-list-item">${escHtml(p)}</div>`).join('');
     document.getElementById('modalTitle').textContent = '确认删除';
     document.getElementById('modalContent').innerHTML = `
-        <p style="color:#f85149;margin-bottom:10px">⚠️ 此操作不可撤销！</p>
-        <p style="color:#8b949e;margin-bottom:10px">以下 ${paths.length} 项将被删除（仅白名单中的路径可删除）：</p>
+        <p style="color:var(--danger);margin-bottom:10px">⚠️ 此操作不可撤销！</p>
+        <p style="color:var(--text-2);margin-bottom:10px">以下 ${paths.length} 项将被删除（仅白名单中的路径可删除）：</p>
         <div class="delete-list">${pathList}</div>
-        <p style="color:#484f58;font-size:0.85em;margin-top:10px;">💡 提示：只有白名单中的路径才能被删除，如需修改白名单请前往"删除白名单"页面</p>
+        <p style="color:var(--text-3);font-size:0.85em;margin-top:10px;">💡 提示：只有白名单中的路径才能被删除，如需修改白名单请前往"删除白名单"页面</p>
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
             <button class="modal-btn modal-btn-danger" onclick="doDelete()">确认删除</button>
@@ -3353,7 +3397,7 @@ function renderDir(data) {
         const entryCanDelete = e.can_delete || false;
         const typeName = getFileTypeName(e.name, isDir);
         
-        const permDisplay = `<span class="perm-link" style="font-family:monospace;font-size:0.82em;cursor:pointer;color:#58a6ff" onclick="showChmodModal('${fullPath.replace(/'/g, "\\'")}', '${octalStr}', '${escHtml(e.name)}')">${escHtml(modeStr)}</span>`;
+        const permDisplay = `<span class="perm-link" style="font-family:monospace;font-size:0.82em;cursor:pointer;color:var(--accent)" onclick="showChmodModal('${fullPath.replace(/'/g, "\\'")}', '${octalStr}', '${escHtml(e.name)}')">${escHtml(modeStr)}</span>`;
         
         // 操作按钮：下载按钮 + 重命名按钮 + 删除按钮（如果在白名单中）
         let actions = `<button class="action-btn btn-download-row" onclick="event.stopPropagation();downloadFile('${fullPath.replace(/'/g, "\\'")}')" title="下载">⬇ 下载</button>`;
@@ -3361,16 +3405,16 @@ function renderDir(data) {
             actions += `<button class="action-btn" onclick="event.stopPropagation();showRenameModal('${fullPath.replace(/'/g, "\\'")}', '${escHtml(e.name).replace(/'/g, "\\'")}')" title="重命名">✏️ 重命名</button>`;
         }
         if (entryCanDelete) {
-            actions += `<button class="action-btn" style="color:#f85149;" onclick="event.stopPropagation();deleteSingleItem('${fullPath.replace(/'/g, "\\'")}')" title="删除">🗑 删除</button>`;
+            actions += `<button class="action-btn" style="color:var(--danger);" onclick="event.stopPropagation();deleteSingleItem('${fullPath.replace(/'/g, "\\'")}')" title="删除">🗑 删除</button>`;
         }
         
         return `<tr>
             <td class="checkbox-cell"><input type="checkbox" class="item-checkbox" data-path="${escHtml(fullPath)}" data-can-delete="${entryCanDelete}" onchange="toggleItem('${fullPath.replace(/'/g, "\\'")}', this.checked)"></td>
             <td><span class="dir-icon">${icon}</span><span class="${nameClass}" onclick="setPath('${fullPath.replace(/'/g, "\\'")}')">${escHtml(e.name)}</span></td>
             <td class="file-size">${isDir ? '-' : formatSize(e.size)}</td>
-            <td style="color:#8b949e;font-size:0.8em">${escHtml(typeName)}</td>
+            <td style="color:var(--text-2);font-size:0.8em">${escHtml(typeName)}</td>
             <td style="font-family:monospace;font-size:0.8em">${permDisplay}</td>
-            <td style="color:#8b949e;font-size:0.8em">${escHtml(owner)}</td>
+            <td style="color:var(--text-2);font-size:0.8em">${escHtml(owner)}</td>
             <td>${actions}</td>
         </tr>`;
     }).join('');
@@ -3417,7 +3461,7 @@ function renderDir(data) {
                             <span class="file-card-meta-value">${escHtml(typeName)}</span>
                         </div>
                         <div class="file-card-meta-item">
-                            <span class="file-card-meta-label" style="cursor:pointer;color:#58a6ff" onclick="event.stopPropagation();showChmodModal('${fullPath.replace(/'/g, "\\'")}', '${octalStr}', '${escHtml(e.name)}')">权限:</span>
+                            <span class="file-card-meta-label" style="cursor:pointer;color:var(--accent)" onclick="event.stopPropagation();showChmodModal('${fullPath.replace(/'/g, "\\'")}', '${octalStr}', '${escHtml(e.name)}')">权限:</span>
                             <span class="file-card-meta-value">${escHtml(modeStr)}</span>
                         </div>
                         <div class="file-card-meta-item">
@@ -3452,7 +3496,7 @@ function renderFile(data, viewMode) {
     
     const toggleHtml = `<div class="view-toggle">${downloadBtn}${editBtn}${isMd ? `<button class="toggle-btn ${viewMode === 'preview' ? 'active' : ''}" onclick="renderFile(currentFileData, 'preview')">预览</button><button class="toggle-btn ${viewMode === 'source' ? 'active' : ''}" onclick="renderFile(currentFileData, 'source')">源码</button>` : ''}</div>`;
     
-    const headerHtml = `<div class="file-header"><span style="font-family:monospace;color:#c9d1d9">${escHtml(data.path)}</span><div class="file-meta">${toggleHtml}<span>📄 ${lines.length} 行</span><span>💾 ${formatSize(data.size)}</span>${permInfo}</div></div>`;
+    const headerHtml = `<div class="file-header"><span style="font-family:monospace;color:var(--text)">${escHtml(data.path)}</span><div class="file-meta">${toggleHtml}<span>📄 ${lines.length} 行</span><span>💾 ${formatSize(data.size)}</span>${permInfo}</div></div>`;
     
     if (isMd && viewMode === 'preview') {
         const renderer = new marked.Renderer();
@@ -3577,11 +3621,11 @@ function enterEditMode() {
     const lang = getLanguageFromPath(currentFileData.path) || 'plaintext';
     
     const headerHtml = `<div class="file-header">
-        <span style="font-family:monospace;color:#c9d1d9">${escHtml(currentFileData.path)}</span>
+        <span style="font-family:monospace;color:var(--text)">${escHtml(currentFileData.path)}</span>
         <div class="file-meta">
             <div class="view-toggle">
                 <button class="toggle-btn" onclick="cancelEdit()">取消</button>
-                <button class="toggle-btn active" style="background:#238636;border-color:#2ea043" onclick="saveFile()">保存</button>
+                <button class="toggle-btn active" style="background:var(--ok);border-color:var(--ok)" onclick="saveFile()">保存</button>
             </div>
             <span>编辑模式</span>
             <span class="tag">${lang}</span>
@@ -3678,12 +3722,12 @@ async function saveFile() {
 
 function showNotification(msg, type) {
     const colors = {
-        success: 'background:#238636;border:1px solid #2ea043',
-        error: 'background:#da3633;border:1px solid #f85149',
-        info: 'background:#1f6feb;border:1px solid #388bfd'
+        success: 'background:var(--ok);border:1px solid var(--ok)',
+        error: 'background:var(--danger);border:1px solid var(--danger)',
+        info: 'background:var(--accent);border:1px solid var(--accent-hover)'
     };
     const notification = document.createElement('div');
-    notification.style.cssText = `position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:6px;color:#fff;font-size:0.9em;z-index:3000;${colors[type] || colors.info}`;
+    notification.style.cssText = `position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:6px;color:var(--on-accent);font-size:0.9em;z-index:3000;${colors[type] || colors.info}`;
     notification.textContent = msg;
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
@@ -3854,8 +3898,8 @@ function showUploadModal() {
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" multiple onchange="handleFileSelect(event)">
             <div style="font-size:2em;margin-bottom:10px">📁</div>
-            <div style="color:#8b949e">点击或拖拽文件到此处上传</div>
-            <div id="selectedFiles" style="margin-top:10px;font-size:0.85em;color:#58a6ff"></div>
+            <div style="color:var(--text-2)">点击或拖拽文件到此处上传</div>
+            <div id="selectedFiles" style="margin-top:10px;font-size:0.85em;color:var(--accent)"></div>
         </div>
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
@@ -3968,20 +4012,20 @@ async function loadWhitelist() {
 function renderWhitelist(whitelist) {
     const container = document.getElementById('whitelistContainer');
     if (!whitelist || whitelist.length === 0) {
-        container.innerHTML = `<div class="state-box" style="padding:20px;"><div class="state-msg" style="color:#8b949e;">白名单为空，删除功能将被禁用</div></div>`;
+        container.innerHTML = `<div class="state-box" style="padding:20px;"><div class="state-msg" style="color:var(--text-2);">白名单为空，删除功能将被禁用</div></div>`;
         return;
     }
     const items = whitelist.map((item, idx) => {
         // 兼容新旧格式
         const path = typeof item === 'string' ? item : item.path;
         const type = typeof item === 'object' ? item.type : null;
-        const typeLabel = type === 'file' ? '<span style="background:rgba(88,166,255,0.15);color:#58a6ff;padding:1px 6px;border-radius:4px;font-size:0.75em;margin-left:8px;">文件</span>' :
-                          type === 'dir' ? '<span style="background:rgba(63,185,80,0.15);color:#3fb950;padding:1px 6px;border-radius:4px;font-size:0.75em;margin-left:8px;">目录</span>' :
-                          type === 'unknown' ? '<span style="background:rgba(139,148,158,0.15);color:#8b949e;padding:1px 6px;border-radius:4px;font-size:0.75em;margin-left:8px;">不存在</span>' : '';
+        const typeLabel = type === 'file' ? '<span style="background:rgba(45, 212, 191,0.15);color:var(--accent);padding:1px 6px;border-radius:4px;font-size:0.75em;margin-left:8px;">文件</span>' :
+                          type === 'dir' ? '<span style="background:rgba(52, 211, 153,0.15);color:var(--ok);padding:1px 6px;border-radius:4px;font-size:0.75em;margin-left:8px;">目录</span>' :
+                          type === 'unknown' ? '<span style="background:rgba(138, 151, 168, 0.15);color:var(--text-2);padding:1px 6px;border-radius:4px;font-size:0.75em;margin-left:8px;">不存在</span>' : '';
         return `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #21262d;">
-                <span style="font-family:monospace;color:#58a6ff;flex:1;font-size:0.88em;">${escHtml(path)}${typeLabel}</span>
-                <button class="action-btn" style="color:#f85149;" onclick="removeWhitelistPath('${escHtml(path).replace(/'/g, "\\'")}')" title="移除">删除</button>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--surface-2);">
+                <span style="font-family:monospace;color:var(--accent);flex:1;font-size:0.88em;">${escHtml(path)}${typeLabel}</span>
+                <button class="action-btn" style="color:var(--danger);" onclick="removeWhitelistPath('${escHtml(path).replace(/'/g, "\\'")}')" title="移除">删除</button>
             </div>
         `;
     }).join('');
@@ -4075,11 +4119,11 @@ function renderMonitor(d) {
     html += `<div class="mon-card"><div class="mon-card-title">⚡ CPU</div><div class="mon-big-num">${cpuPct.toFixed(1)}%</div><div class="pbar-wrap"><div class="pbar ${pbarClass(cpuPct)}" style="width:${cpuPct}%"></div></div><div class="mon-row"><span class="label">核心</span><span class="val">${cpu.physical_cores || '-'} / ${cpu.threads || '-'}</span></div><div class="mon-row"><span class="label">负载</span><span class="val">${load['1m']?.toFixed(2)} / ${load['5m']?.toFixed(2)} / ${load['15m']?.toFixed(2)}</span></div></div>`;
     const memPct = mem.usage_percent || 0;
     html += `<div class="mon-card"><div class="mon-card-title">🧠 内存</div><div class="mon-big-num">${memPct.toFixed(1)}%</div><div class="pbar-wrap"><div class="pbar ${pbarClass(memPct)}" style="width:${memPct}%"></div></div><div class="mon-row"><span class="label">已用</span><span class="val">${formatSize(mem.used)} / ${formatSize(mem.total)}</span></div></div>`;
-    html += `<div class="mon-card"><div class="mon-card-title">🌐 网络</div><div class="net-pair"><div><div class="net-rate" style="color:#4ade80">↓ ${formatRate(net.rx_rate || 0)}</div><div class="net-label">下行</div></div><div><div class="net-rate" style="color:#58a6ff">↑ ${formatRate(net.tx_rate || 0)}</div><div class="net-label">上行</div></div></div></div>`;
+    html += `<div class="mon-card"><div class="mon-card-title">🌐 网络</div><div class="net-pair"><div><div class="net-rate" style="color:var(--ok)">↓ ${formatRate(net.rx_rate || 0)}</div><div class="net-label">下行</div></div><div><div class="net-rate" style="color:var(--accent)">↑ ${formatRate(net.tx_rate || 0)}</div><div class="net-label">上行</div></div></div></div>`;
     
     // 磁盘 IO 卡片
     html += `<div class="mon-card"><div class="mon-card-title">💿 磁盘 IO</div>`;
-    html += `<div class="net-pair"><div><div class="io-rate" style="color:#4ade80">↓ ${formatRate(diskIO.read_bytes_per_sec || 0)}</div><div class="io-label">读取</div></div><div><div class="io-rate" style="color:#58a6ff">↑ ${formatRate(diskIO.write_bytes_per_sec || 0)}</div><div class="io-label">写入</div></div></div>`;
+    html += `<div class="net-pair"><div><div class="io-rate" style="color:var(--ok)">↓ ${formatRate(diskIO.read_bytes_per_sec || 0)}</div><div class="io-label">读取</div></div><div><div class="io-rate" style="color:var(--accent)">↑ ${formatRate(diskIO.write_bytes_per_sec || 0)}</div><div class="io-label">写入</div></div></div>`;
     html += `<div class="mon-row" style="margin-top:8px"><span class="label">IOPS</span><span class="val" style="font-family:monospace">${(diskIO.iops || 0).toFixed(0)} op/s</span></div>`;
     html += `</div>`;
     
@@ -4126,7 +4170,7 @@ function renderMonitor(d) {
     html += `
         <div class="chart-section">
             <div class="chart-tabs">
-                <span style="color:#c9d1d9;font-weight:600;margin-right:12px;">📈 历史趋势</span>
+                <span style="color:var(--text);font-weight:600;margin-right:12px;">📈 历史趋势</span>
                 <button class="chart-tab ${currentHistoryHours === 1 ? 'active' : ''}" onclick="setHistoryHours(1)">1小时</button>
                 <button class="chart-tab ${currentHistoryHours === 6 ? 'active' : ''}" onclick="setHistoryHours(6)">6小时</button>
                 <button class="chart-tab ${currentHistoryHours === 24 ? 'active' : ''}" onclick="setHistoryHours(24)">24小时</button>
@@ -4269,19 +4313,19 @@ function renderCharts(data) {
             legend: {
                 display: true,
                 position: 'top',
-                labels: { color: '#8b949e', font: { size: 11 } }
+                labels: { color: 'var(--text-2)', font: { size: 11 } }
             }
         },
         scales: {
             x: {
                 display: true,
-                ticks: { color: '#484f58', font: { size: 10 }, maxTicksLimit: 10 },
-                grid: { color: '#21262d' }
+                ticks: { color: 'var(--text-3)', font: { size: 10 }, maxTicksLimit: 10 },
+                grid: { color: 'var(--surface-2)' }
             },
             y: {
                 display: true,
-                ticks: { color: '#484f58', font: { size: 10 } },
-                grid: { color: '#21262d' }
+                ticks: { color: 'var(--text-3)', font: { size: 10 } },
+                grid: { color: 'var(--surface-2)' }
             }
         },
         animation: { duration: 0 }
@@ -4298,8 +4342,8 @@ function renderCharts(data) {
                 datasets: [{
                     label: 'CPU %',
                     data: data.cpu_usage || [],
-                    borderColor: '#58a6ff',
-                    backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                    borderColor: 'var(--accent)',
+                    backgroundColor: 'rgba(45, 212, 191, 0.1)',
                     fill: true,
                     tension: 0.4,
                     pointRadius: 0
@@ -4320,8 +4364,8 @@ function renderCharts(data) {
                 datasets: [{
                     label: '内存 %',
                     data: data.memory_usage || [],
-                    borderColor: '#3fb950',
-                    backgroundColor: 'rgba(63, 185, 80, 0.1)',
+                    borderColor: 'var(--ok)',
+                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
                     fill: true,
                     tension: 0.4,
                     pointRadius: 0
@@ -4345,8 +4389,8 @@ function renderCharts(data) {
                     {
                         label: '下行 MB/s',
                         data: rxData,
-                        borderColor: '#4ade80',
-                        backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                        borderColor: 'var(--ok)',
+                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -4354,8 +4398,8 @@ function renderCharts(data) {
                     {
                         label: '上行 MB/s',
                         data: txData,
-                        borderColor: '#58a6ff',
-                        backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                        borderColor: 'var(--accent)',
+                        backgroundColor: 'rgba(45, 212, 191, 0.1)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -4380,8 +4424,8 @@ function renderCharts(data) {
                     {
                         label: '读取 MB/s',
                         data: readData,
-                        borderColor: '#4ade80',
-                        backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                        borderColor: 'var(--ok)',
+                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -4389,8 +4433,8 @@ function renderCharts(data) {
                     {
                         label: '写入 MB/s',
                         data: writeData,
-                        borderColor: '#58a6ff',
-                        backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                        borderColor: 'var(--accent)',
+                        backgroundColor: 'rgba(45, 212, 191, 0.1)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0

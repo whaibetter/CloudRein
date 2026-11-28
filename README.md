@@ -65,6 +65,15 @@ security:
 - systemd 服务：`cloudrein.service`（12151，`MemoryMax=512M`）+ `cloudrein-gateway.service`（12179，`MemoryMax=128M`）
 - rclone WebDAV 改绑 `127.0.0.1:12150`，不再直接对外
 
+## 界面主题
+
+界面统一为「主题 A · 深空青」（深色），Token 内联在 `index.html` 的 `<style>` 顶部，取值对齐仓库根目录 `tokens.css`。
+颜色只写在 `:root` 变量块里，规则层一律引用 `var(--*)`；新增颜色请加到变量块，不要写进规则。
+CodeMirror 的 dracula 主题用 `!important` 覆盖了背景，已用同权重规则收回 `--inset` 底色。
+
+> 说明：`/assets/*` 由网关以 `immutable, max-age=31536000` 提供，且 Flask 未挂 `/assets` 路由，
+> 因此主题不采用外链 CSS，而是内联，避免改色后长期不生效与本地开发缺样式。
+
 ## 功能特性
 
 ### 文件管理
